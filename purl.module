@@ -1,0 +1,8 @@
+<?php
+
+function purl_rebuild()
+{
+    $modifierIndex = \Drupal::service('purl.modifier_index');
+    $modifierIndex->deleteAll();
+    $modifierIndex->rebuild();
+}

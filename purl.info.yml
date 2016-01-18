@@ -1,0 +1,6 @@
+name: Persistent URL
+type: module
+description: Persistent URL
+core: 8.x
+package: System
+features: false

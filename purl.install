@@ -1,0 +1,58 @@
+<?php
+
+function purl_schema()
+{
+    $schema = array();
+
+    $schema['purl_providers_settings'] = array(
+        'fields' => array(
+            'provider' => array(
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => true,
+            ),
+            'method' => array(
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => true,
+            ),
+            'settings' => array(
+                'type' => 'text',
+                'not null' => true,
+                'mysql_type' => 'mediumtext',
+            ),
+            'rebuild' => array(
+                'type' => 'int',
+                //'size' => 'tinyint',
+                'default' => 0,
+            ),
+        ),
+        'primary key' => array('provider'),
+        'description' => 'PURL provider settings',
+    );
+
+    $schema['purl_modifiers'] = array(
+        'fields' => array(
+            'provider' => array(
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => true,
+            ),
+            'modifier' => array(
+                'type' => 'varchar',
+                'length' => 255,
+                'not null' => true,
+            ),
+            'value' => array(
+                'type' => 'text',
+                'not null' => true,
+                'mysql_type' => 'mediumtext',
+            ),
+        ),
+        'primary key' => array('provider', 'modifier'),
+        'description' => 'Index of PURL modifiers',
+    );
+
+    return $schema;
+}
+
