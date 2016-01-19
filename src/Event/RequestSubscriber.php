@@ -11,6 +11,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
+use Drupal\purl\PurlEvents;
 
 /**
  * ALTERNATIVE APPROACH IS ENCAPSULATE METHOD PLUGIN LOGIC WITH A PATH
@@ -101,23 +102,32 @@ class RequestSubscriber implements EventSubscriberInterface
             }
 
             $methodPlugin = $this->methodManager->getMethodPlugin($methodKey);
+
             $contains = $methodPlugin->contains($request, $modifierKey);
 
             if ($contains) {
 
                 $matchedModifiers[] = array(
-                    "method_plugin" => $methodPlugin,
-                    "modifier" => $modifierKey,
+                    'method_plugin' => $methodPlugin,
+                    'modifier' => $modifierKey,
+                    'provider' => $modifier['provider'],
+                    'value' => $modifier['value'],
+                    'method' => $methodKey,
                 );
 
-                if ($method instanceof RequestAlteringInterface) {
-                    $requestAlteringMethods[] = $method;
-                }
+                //if ($methodPlugin instanceof RequestAlteringInterface) {
+                    //$requestAlteringMethods[] = $matchedModifiers;
+                //}
             }
         }
 
-        foreach ($requestAlteringMethods as $method) {
-            $method["plugin"]->alterRequest($request, $method["modifier"]);
+        foreach ($matchedModifiers as $matched) {
+
+            if (!$matched['method_plugin'] instanceof RequestAlteringInterface) {
+                continue;
+            }
+
+            $matched['method_plugin']->alterRequest($request, $matched['modifier']);
             $this->reinitializeRequest($request);
         }
 
@@ -125,6 +135,7 @@ class RequestSubscriber implements EventSubscriberInterface
             $dispatcher->dispatch(PurlEvents::MODIFIER_MATCHED, new ModifierMatchedEvent(
                 $request,
                 $identifier['provider'],
+                $identifier['method'],
                 $identifier['modifier'],
                 $identifier['value']
             ));

@@ -38,3 +38,11 @@ services:
       - @purl.modifier_index
     tags:
       - { name: event_subscriber }
+
+  purl.outbound_path_processor:
+    class: Drupal\purl\PathProcessor\PurlContextOutboundPathProcessor
+    arguments: 
+      - @purl.plugin.method_manager
+    tags:
+      - { name: event_subscriber }
+      - { name: path_processor_outbound, priority: 300 }

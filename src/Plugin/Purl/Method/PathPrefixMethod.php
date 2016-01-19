@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
  *     id="path_prefix"
  * )
  */
-class PathPrefixMethod implements MethodInterface, RequestAlteringInterface
+class PathPrefixMethod implements MethodInterface, RequestAlteringInterface, OutboundAlteringInterface
 {
     public function contains(Request $request, $identifier)
     {
@@ -24,5 +24,10 @@ class PathPrefixMethod implements MethodInterface, RequestAlteringInterface
         $uri = $request->getRequestUri();
         $newPath = substr($uri, strlen($identifier) + 1);
         $request->server->set('REQUEST_URI', $newPath);
+    }
+
+    public function alterOutbound($path, $modifier, &$options = null, Request $request = null)
+    {
+        return '/' . $modifier . $path;
     }
 }
