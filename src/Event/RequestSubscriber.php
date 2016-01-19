@@ -12,6 +12,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
+/**
+ * ALTERNATIVE APPROACH IS ENCAPSULATE METHOD PLUGIN LOGIC WITH A PATH
+ * PROCESSOR, AND DO MOST LOGIC WITHIN THE CONFINES OF Symfony\(Cmf\)?Routing
+ */
 class RequestSubscriber implements EventSubscriberInterface
 {
 
