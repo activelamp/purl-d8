@@ -1,0 +1,35 @@
+diff --git a/core/lib/Drupal/Core/Routing/UrlGenerator.php b/core/lib/Drupal/Core/Routing/UrlGenerator.php
+index 9979b73..3dce650 100644
+--- a/core/lib/Drupal/Core/Routing/UrlGenerator.php
++++ b/core/lib/Drupal/Core/Routing/UrlGenerator.php
+@@ -340,7 +340,10 @@ public function generateFromRoute($name, $parameters = array(), $options = array
+     $base_url = $this->context->getBaseUrl();
+ 
+     $absolute = !empty($options['absolute']);
+-    if (!$absolute || !$host = $this->context->getHost()) {
++
++    $host = isset($options['host']) && strlen((string) $options['host']) > 0 ? (string) $options['host'] : $this->context->getHost();
++
++    if (!$absolute || !$host) {
+       $url = $base_url . $path . $fragment;
+       return $collect_bubbleable_metadata ? $generated_url->setGeneratedUrl($url) : $url;
+     }
+diff --git a/core/tests/Drupal/Tests/Core/Routing/UrlGeneratorTest.php b/core/tests/Drupal/Tests/Core/Routing/UrlGeneratorTest.php
+index 4d91218..6a0fcc5 100644
+--- a/core/tests/Drupal/Tests/Core/Routing/UrlGeneratorTest.php
++++ b/core/tests/Drupal/Tests/Core/Routing/UrlGeneratorTest.php
+@@ -410,4 +410,14 @@ protected function assertGenerateFromRoute($route_name, array $route_parameters,
+     $this->assertEquals($expected_bubbleable_metadata, BubbleableMetadata::createFromObject($generated_url));
+   }
+ 
++  /**
++   * Confirms that URL generation works with `host` option specified.
++   */
++  public function testUrlGenerationWithHostOption() {
++
++    $options = array('absolute' => TRUE, 'fragment' => 'top', 'host' => 'local.dev');
++    // Extra parameters should appear in the query string.
++    $this->assertGenerateFromRoute('test_1', ['zoo' => 5], $options, 'http://local.dev/hello/world?zoo=5#top', (new BubbleableMetadata())->setCacheMaxAge(Cache::PERMANENT)->setCacheContexts(['url.site']));
++  }
++
+ }

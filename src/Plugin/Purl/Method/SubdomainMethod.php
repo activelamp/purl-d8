@@ -5,7 +5,6 @@ namespace Drupal\purl\Plugin\Purl\Method;
 use Drupal\purl\Annotation\PurlMethod;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -14,14 +13,12 @@ use Symfony\Component\HttpFoundation\Request;
  *     name="Subdomain"
  * )
  */
-class SubdomainMethod implements MethodInterface, ContainerAwareInterface
+class SubdomainMethod implements MethodInterface, ContainerAwareInterface, OutboundAlteringInterface
 {
-
     use ContainerAwareTrait;
 
     public function contains(Request $request, $identifier)
     {
-
         $baseHost = $this->getBaseHost();
 
         if (!$baseHost) {
@@ -39,7 +36,20 @@ class SubdomainMethod implements MethodInterface, ContainerAwareInterface
 
     private function getBaseHost()
     {
-        // Retrieve this from configuration or container paramater bag (maybe)
+        // Retrieve this from configuration or container parameter bag (maybe)
         return 'apa.dev';
+    }
+
+    public function alterOutbound($path, $modifier, &$options = null, Request $request = null)
+    {
+        $baseHost = $this->getBaseHost();
+
+        if (!$baseHost) {
+            return $path;
+        }
+
+        $options['absolute'] = true;
+        $options['host'] = sprintf('%s.%s', $modifier, $this->getBaseHost());
+        return $path;
     }
 }

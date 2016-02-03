@@ -46,3 +46,11 @@ services:
     tags:
       - { name: event_subscriber }
       - { name: path_processor_outbound, priority: 300 }
+
+  purl.outbound_route_processor:
+    class: Drupal\purl\RouteProcessor\PurlContextOutboundRouteProcessor
+    arguments:
+      - @purl.plugin.method_manager
+    tags:
+      - { name: event_subscriber }
+      - { name: route_processor_outbound, priority: 300 }
