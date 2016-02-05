@@ -6,6 +6,7 @@ use Drupal\Component\Plugin\Factory\DefaultFactory;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
+use Drupal\purl\Plugin\Purl\Method\MethodInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 
@@ -15,7 +16,7 @@ class MethodPluginManager extends DefaultPluginManager implements MethodPluginMa
     use ContainerAwareTrait;
 
     /**
-     * @var Drupal\purl\Plugin\Purl\Method\MethodInterface[]
+     * @var MethodInterface[]
      *
      * We store created instances here and return the right one when queried
      * for again. We only one one instance for each method plugin.
@@ -38,6 +39,10 @@ class MethodPluginManager extends DefaultPluginManager implements MethodPluginMa
         $this->setCacheBackend($cacheBackend, 'purl_method_plugins');
     }
 
+    /**
+     * @param string $id
+     * @return MethodInterface
+     */
     public function getMethodPlugin($id)
     {
         if (!isset($this->methodPlugins[$id])) {

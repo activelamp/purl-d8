@@ -13,11 +13,11 @@ use Symfony\Component\HttpFoundation\Request;
  *     name="Subdomain"
  * )
  */
-class SubdomainMethod implements MethodInterface, ContainerAwareInterface, OutboundAlteringInterface
+class SubdomainMethod implements MethodInterface, ContainerAwareInterface
 {
     use ContainerAwareTrait;
 
-    public function contains(Request $request, $identifier)
+    public function contains(Request $request, $modifier)
     {
         $baseHost = $this->getBaseHost();
 
@@ -31,25 +31,53 @@ class SubdomainMethod implements MethodInterface, ContainerAwareInterface, Outbo
             return false;
         }
 
-        return strpos($request->getHost(), $identifier . '.') === 0;
+        return $this->hostContainsModifier($modifier, $request->getHost());
+    }
+
+    private function hostContainsModifier($modifier, $host)
+    {
+        return strpos($host, $modifier . '.') === 0;
     }
 
     private function getBaseHost()
     {
-        // Retrieve this from configuration or container parameter bag (maybe)
+        // Retrieve this from request context.
         return 'apa.dev';
     }
 
-    public function alterOutbound($path, $modifier, &$options = null, Request $request = null)
+    public function enterContext($modifier, $path, array &$options)
     {
         $baseHost = $this->getBaseHost();
 
         if (!$baseHost) {
-            return $path;
+           return null;
         }
 
         $options['absolute'] = true;
-        $options['host'] = sprintf('%s.%s', $modifier, $this->getBaseHost());
+
+        if ($this->hostContainsModifier($modifier, $baseHost)) {
+            return null;
+        }
+
+        $options['host'] = sprintf('%s.%s', $modifier, $baseHost);
+
+        return $path;
+    }
+
+    public function exitContext($modifier, $path, array &$options)
+    {
+        $baseHost = $this->getBaseHost();
+
+        if (!$this->hostContainsModifier($modifier, $baseHost)) {
+            return null;
+        }
+
+        // Strip out modifier sub-domain.
+        $host = substr($baseHost, 0, strlen($modifier) + 1);
+
+        $options['absolute'] = true;
+        $options['host'] = $host;
+
         return $path;
     }
 }

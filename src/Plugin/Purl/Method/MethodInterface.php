@@ -7,5 +7,9 @@ use Symfony\Component\Routing;
 
 interface MethodInterface
 {
-    public function contains(Request $request, $identifier);
+    public function contains(Request $request, $modifier);
+
+    public function enterContext($modifier, $path, array &$options);
+
+    public function exitContext($modifier, $path, array &$options);
 }

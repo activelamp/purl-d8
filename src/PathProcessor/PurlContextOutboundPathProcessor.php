@@ -14,6 +14,9 @@ use Symfony\Component\Routing\Route;
 
 class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface, EventSubscriberInterface
 {
+    /**
+     * @var ModifierMatchedEvent[]
+     */
     protected $events = array();
 
     protected $methodManager;
@@ -26,17 +29,39 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
     public function processOutbound($path, &$options = array(), Request $request = NULL, BubbleableMetadata $bubbleable_metadata = NULL)
     {
         if (array_key_exists('purl_context', $options) && $options['purl_context'] == false) {
+
+            foreach ($this->events as $event) {
+                $path = $this->exitContext($event, $path, $options);
+            }
+
             return $path;
         }
 
         foreach ($this->events as $event) {
-            $method = $this->methodManager->getMethodPlugin($event->getMethod());
-            if ($method instanceof OutboundAlteringInterface) {
-                $path = $method->alterOutbound($path, $event->getModifier(), $options, $request);
-            }
+            $path = $this->enterContext($event, $path, $options);
         }
 
         return $path;
+    }
+
+    public function exitContext(ModifierMatchedEvent $event, $path, $options)
+    {
+
+        $method = $this->methodManager->getMethodPlugin($event->getMethod());
+        $result = $method->exitContext($event->getModifier(), $path, $options);
+
+        return $result === null ? $path : $result;
+
+    }
+
+    public function enterContext(ModifierMatchedEvent $event, $path, $options)
+    {
+
+        $method = $this->methodManager->getMethodPlugin($event->getMethod());
+        $result = $method->enterContext($event->getModifier(), $path, $options);
+
+        return $result === null ? $path : $result;
+
     }
 
     public function onModifierMatched(ModifierMatchedEvent $event)

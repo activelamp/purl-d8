@@ -54,3 +54,12 @@ services:
     tags:
       - { name: event_subscriber }
       - { name: route_processor_outbound, priority: 300 }
+
+  # @TODO: Consider decorating @url_generator.non_bubbling instead.
+  purl.url_generator:
+    class: Drupal\purl\Routing\UrlGenerator
+    arguments: ['@url_generator.non_bubbling']
+    calls:
+      - [setContext, ['@?router.request_context']]
+
+
