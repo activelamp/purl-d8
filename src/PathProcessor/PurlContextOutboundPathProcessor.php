@@ -30,6 +30,12 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
     {
         if (array_key_exists('purl_context', $options) && $options['purl_context'] == false) {
 
+            if (count($this->events) && $bubbleable_metadata) {
+                $cacheContexts = $bubbleable_metadata->getCacheContexts();
+                $cacheContexts[] = 'purl';
+                $bubbleable_metadata->setCacheContexts($cacheContexts);
+            }
+
             foreach ($this->events as $event) {
                 $path = $this->exitContext($event, $path, $options);
             }

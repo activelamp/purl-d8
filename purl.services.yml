@@ -31,7 +31,13 @@ services:
       - @purl.plugin.method_manager
     tags:
       - { name: event_subscriber }
-  
+
+  cache_context.purl:
+    class: Drupal\purl\Cache\Context\PurlCacheContext
+    tags:
+      - { name: event_subscriber }
+      - { name: cache.context }
+
   purl.rebuild_index:
     class: Drupal\purl\Event\RebuildIndex
     arguments: 
