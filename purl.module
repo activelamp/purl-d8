@@ -1,8 +1,50 @@
 <?php
 
-function purl_rebuild()
-{
+function purl_rebuild() {
     $modifierIndex = \Drupal::service('purl.modifier_index');
     $modifierIndex->deleteAll();
     $modifierIndex->rebuild();
+}
+
+function purl_form_menu_edit_form_alter(&$form, $form_state) {
+    // Edit menu as whole
+    //
+
+    $providerManager = \Drupal::getContainer()->get('purl.plugin.provider_manager');
+
+    $definitions = $providerManager->findDefinitions();
+
+    $active = [
+        null => '-- None --',
+    ];
+
+    foreach ($definitions as $id => $def) {
+        if (!$def['method']) {
+            continue;
+        }
+        $active[$id] = $def['name'];
+    }
+
+    $form['purl'] = [
+        '#tree' => true,
+        '#type' => 'fieldset',
+        '#title' => 'Persistent URLs',
+        '#collapsible' => false,
+        '#collapsed' => false,
+    ];
+
+    $form['purl']['purl_provider'] = array(
+        '#type' => 'select',
+        '#title' => 'PURL provider',
+        '#value' => null,
+        '#options' => $active
+    );
+}
+
+function purl_form_menu_link_content_menu_link_content_form_alter(&$form, $form_state) {
+    // Edit menu item
+}
+
+function purl_form_alter(&$form, $form_state) {
+    kint($form);
 }
