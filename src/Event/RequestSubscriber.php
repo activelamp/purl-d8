@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Drupal\purl\PurlEvents;
+use Drupal\purl\MatchedModifiers;
 
 /**
  * ALTERNATIVE APPROACH IS ENCAPSULATE METHOD PLUGIN LOGIC WITH A PATH
@@ -35,15 +36,22 @@ class RequestSubscriber implements EventSubscriberInterface
      */
     protected $modifierIndex;
 
+    /**
+     * @var MatchedModifiers
+     */
+    protected $matchedModifiers;
+
 
     public function __construct(
         ModifierIndex $modifierIndex,
         ProviderManager $providerManager,
-        MethodPluginManager $methodManager
+        MethodPluginManager $methodManager,
+        MatchedModifiers $matchedModifiers
     ) {
         $this->modifierIndex = $modifierIndex;
         $this->providerManager = $providerManager;
         $this->methodManager = $methodManager;
+        $this->matchedModifiers = $matchedModifiers;
     }
 
     public static function getSubscribedEvents()
@@ -132,13 +140,15 @@ class RequestSubscriber implements EventSubscriberInterface
         }
 
         foreach ($matchedModifiers as $identifier) {
-            $dispatcher->dispatch(PurlEvents::MODIFIER_MATCHED, new ModifierMatchedEvent(
+            $event = new ModifierMatchedEvent(
                 $request,
                 $identifier['provider'],
                 $identifier['method'],
                 $identifier['modifier'],
                 $identifier['value']
-            ));
+            );
+            $dispatcher->dispatch(PurlEvents::MODIFIER_MATCHED, $event);
+            $this->matchedModifiers->add($event);
         }
 
         $request->attributes->set('purl.matched_modifiers', $matchedModifiers);

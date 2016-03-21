@@ -46,5 +46,5 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, $form_
 }
 
 function purl_form_alter(&$form, $form_state) {
-    kint($form);
+    //kint($form);
 }

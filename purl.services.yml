@@ -29,6 +29,7 @@ services:
       - @purl.modifier_index
       - @purl.plugin.provider_manager
       - @purl.plugin.method_manager
+      - @purl.matched_modifiers
     tags:
       - { name: event_subscriber }
 
@@ -68,4 +69,6 @@ services:
     calls:
       - [setContext, ['@?router.request_context']]
 
+  purl.matched_modifiers:
+    class: Drupal\purl\MatchedModifiers
 
