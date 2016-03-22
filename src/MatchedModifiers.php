@@ -16,7 +16,7 @@ class MatchedModifiers
      */
     public function getMatched()
     {
-        return $matched;
+        return $this->matched;
     }
 
     /**
