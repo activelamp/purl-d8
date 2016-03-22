@@ -43,9 +43,17 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
             return $path;
         }
 
+        if (count($this->events) && $bubbleable_metadata) {
+            $cacheContexts = $bubbleable_metadata->getCacheContexts();
+            $cacheContexts[] = 'purl';
+            $bubbleable_metadata->setCacheContexts($cacheContexts);
+        }
+
         foreach ($this->events as $event) {
             $path = $this->enterContext($event, $path, $options);
         }
+
+        $options['purl_altered'] = true;
 
         return $path;
     }
@@ -74,7 +82,7 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
     {
         $this->events[] = $event;
     }
-    
+
     public static function getSubscribedEvents()
     {
         return [

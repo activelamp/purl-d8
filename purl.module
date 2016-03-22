@@ -48,3 +48,32 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, $form_
 function purl_form_alter(&$form, $form_state) {
     //kint($form);
 }
+
+function purl_process_link(&$variables) {
+    $processor = \Drupal::getContainer()->get('purl.outbound_path_processor');
+    $url = $variables['url'];
+    $path = $url->getUri();
+    $path = preg_replace('/^base:/', '/', $path);
+    $path = $processor->processOutbound($path, $variables['options']);
+    $path = preg_replace('#^/#', 'base:', $path);
+     //Setting $variables['url'] to a new Drupal\Core\Url object does not work.
+     //Using ReflectionClass is needed to mutate the protected `uri` parameter.
+     //I wish there is a better way to do this.
+    $reflection = new \ReflectionClass(get_class($url));
+    $property = $reflection->getProperty('uri');
+    $property->setAccessible(true);
+    $property->setValue($url, $path);
+    $property->setAccessible(false);
+}
+
+function purl_link_alter(&$variables) {
+    $url = $variables['url'];
+
+    // Skip external links. Also skip routed URLs. Let outbound processor
+    // handle them later.
+    if ($url->isExternal() || $url->isRouted()) {
+        return;
+    }
+
+    purl_process_link($variables);
+}
