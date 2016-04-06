@@ -11,7 +11,6 @@ function purl_form_menu_edit_form_alter(&$form, $form_state) {
     //
 
     $providerManager = \Drupal::getContainer()->get('purl.plugin.provider_manager');
-
     $definitions = $providerManager->findDefinitions();
 
     $active = [
@@ -47,4 +46,21 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, $form_
 
 function purl_form_alter(&$form, $form_state) {
     //kint($form);
+}
+
+/**
+ * Implements hook_preprocess_html().
+ */
+function purl_preprocess_html(&$vars) {
+    $init = \Drupal::requestStack();
+    $request = $init->getCurrentRequest();
+    $modifiers = $request->attributes->get('purl.matched_modifiers', []);
+
+    foreach ($modifiers as $modifier) {
+        foreach ($modifier as $key => $item) {
+            if (!is_object($item)) {
+                $vars['attributes']['class'][] = 'purl-' . $key . '-' . $item;
+            }
+        }
+    }
 }
