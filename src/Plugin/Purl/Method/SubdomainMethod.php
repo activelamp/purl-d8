@@ -42,7 +42,8 @@ class SubdomainMethod implements MethodInterface, ContainerAwareInterface
     private function getBaseHost()
     {
         // Retrieve this from request context.
-        return 'apa.dev';
+        global $base_url;
+        return $base_url;
     }
 
     public function enterContext($modifier, $path, array &$options)
