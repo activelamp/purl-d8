@@ -6,6 +6,7 @@ use Drupal\purl\Annotation\PurlMethod;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Site\Settings;
 
 /**
  * @PurlMethod(
@@ -42,8 +43,7 @@ class SubdomainMethod implements MethodInterface, ContainerAwareInterface
     private function getBaseHost()
     {
         // Retrieve this from request context.
-        global $base_url;
-        return $base_url;
+        return Settings::get('purl_base_domain');
     }
 
     public function enterContext($modifier, $path, array &$options)
