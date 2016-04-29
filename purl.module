@@ -14,7 +14,8 @@ function purl_form_menu_edit_form_alter(&$form, $form_state) {
     $definitions = $providerManager->findDefinitions();
 
     $active = [
-        null => '-- None --',
+        null => '-- Current --',
+        'NONE' =>  ' -- No provider --',
     ];
 
     foreach ($definitions as $id => $def) {

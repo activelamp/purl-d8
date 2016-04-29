@@ -8,7 +8,7 @@ function purl_schema()
         'fields' => array(
             'provider' => array(
                 'type' => 'varchar',
-                'length' => 255,
+                'length' => 150,
                 'not null' => true,
             ),
             'method' => array(
@@ -35,12 +35,12 @@ function purl_schema()
         'fields' => array(
             'provider' => array(
                 'type' => 'varchar',
-                'length' => 255,
+                'length' => 150,
                 'not null' => true,
             ),
             'modifier' => array(
                 'type' => 'varchar',
-                'length' => 255,
+                'length' => 150,
                 'not null' => true,
             ),
             'value' => array(
