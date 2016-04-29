@@ -3,33 +3,33 @@ services:
     class: Drupal\purl\Plugin\MethodPluginManager
     parent: default_plugin_manager
     calls:
-      - [setContainer, [ @service_container ]]
+      - [setContainer, [ '@service_container' ]]
 
   purl.plugin.provider_manager:
     class: Drupal\purl\Plugin\ProviderManager
     parent: default_plugin_manager
     calls:
-      - [setContainer, [ @service_container ]]
-      - [setConnection, [ @database ]]
+      - [setContainer, [ '@service_container' ]]
+      - [setConnection, [ '@database' ]]
 
   purl.modifier_index:
     class: Drupal\purl\Plugin\ModifierIndex
     arguments:
-      - @purl.plugin.provider_manager
-      - @database
+      - '@purl.plugin.provider_manager'
+      - '@database'
 
   #purl.identifier_provider.composite:
     #class: Drupal\purl\Plugin\Purl\Identifier\CompositeIdentifierProvider
     #arguments:
-        #- [ @purl.identifier_provider.test ]
+        #- [ '@purl.identifier_provider.test' ]
 
   purl.request_subscriber:
     class: Drupal\purl\Event\RequestSubscriber
     arguments: 
-      - @purl.modifier_index
-      - @purl.plugin.provider_manager
-      - @purl.plugin.method_manager
-      - @purl.matched_modifiers
+      - '@purl.modifier_index'
+      - '@purl.plugin.provider_manager'
+      - '@purl.plugin.method_manager'
+      - '@purl.matched_modifiers'
     tags:
       - { name: event_subscriber }
 
@@ -42,14 +42,14 @@ services:
   purl.rebuild_index:
     class: Drupal\purl\Event\RebuildIndex
     arguments: 
-      - @purl.modifier_index
+      - '@purl.modifier_index'
     tags:
       - { name: event_subscriber }
 
   purl.outbound_path_processor:
     class: Drupal\purl\PathProcessor\PurlContextOutboundPathProcessor
     arguments: 
-      - @purl.plugin.method_manager
+      - '@purl.plugin.method_manager'
     tags:
       - { name: event_subscriber }
       - { name: path_processor_outbound, priority: 300 }
@@ -57,7 +57,7 @@ services:
   purl.outbound_route_processor:
     class: Drupal\purl\RouteProcessor\PurlContextOutboundRouteProcessor
     arguments:
-      - @purl.plugin.method_manager
+      - '@purl.plugin.method_manager'
     tags:
       - { name: event_subscriber }
       - { name: route_processor_outbound, priority: 300 }
