@@ -72,3 +72,6 @@ services:
   purl.matched_modifiers:
     class: Drupal\purl\MatchedModifiers
 
+  purl.default_tree_manipulators:
+    class: Drupal\purl\Menu\PurlMenuLinkTreeManipulators
+    arguments: ['@access_manager', '@current_user', '@entity.query']
