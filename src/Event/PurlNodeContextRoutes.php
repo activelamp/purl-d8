@@ -5,6 +5,8 @@ namespace Drupal\purl\Event;
 use Drupal\Core\Render\Element\Url;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\purl\PurlEvents;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\purl\MatchedModifiers;
@@ -52,11 +54,11 @@ class PurlNodeContextRoutes implements EventSubscriberInterface {
    * @param \Symfony\Component\HttpKernel\Event\GetResponseEvent $event
    *   The event to process.
    */
-  public function purlCheckNodeContext(GetResponseEvent $event) {
+  public function purlCheckNodeContext(GetResponseEvent $event, $eventName, EventDispatcherInterface $dispatcher_interface) {
     $route_options = $this->routeMatch->getRouteObject()->getOptions();
     $isAdminRoute = array_key_exists('_admin_route', $route_options) && $route_options['_admin_route'];
 
-    if (!$isAdminRoute && $this->matchedModifiers->getMatched() && $entity = $this->routeMatch->getParameter('node')) {
+    if (!$isAdminRoute && $matched = $this->matchedModifiers->getMatched() && $entity = $this->routeMatch->getParameter('node')) {
       $node_type = $this->entityStorage->load($entity->bundle());
       $purl_settings = $node_type->getThirdPartySettings('purl');
 
@@ -67,7 +69,11 @@ class PurlNodeContextRoutes implements EventSubscriberInterface {
           'absolute' => TRUE
         ]);
         try {
-          $event->setResponse(new TrustedRedirectResponse($url->toString()));
+          $redirect_response = new TrustedRedirectResponse($url->toString());
+          $modifiers = $event->getRequest()->attributes->get('purl.matched_modifiers', []);
+          $new_event = new ExitedContextEvent($event->getRequest(), $redirect_response, $this->routeMatch, $modifiers);
+          $dispatcher_interface->dispatch(PurlEvents::EXITED_CONTEXT, $new_event);
+          $event->setResponse($new_event->getResponse());
         }
         catch (RedirectLoopException $e) {
           \Drupal::logger('redirect')->warning($e->getMessage());
