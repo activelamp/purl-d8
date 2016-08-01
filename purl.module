@@ -1,5 +1,10 @@
 <?php
 
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\node\NodeTypeInterface;
+use Drupal\Core\Form;
+
 function purl_rebuild() {
     $modifierIndex = \Drupal::service('purl.modifier_index');
     $modifierIndex->deleteAll();
@@ -47,6 +52,41 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, $form_
 
 function purl_form_alter(&$form, $form_state) {
     //kint($form);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function purl_form_node_type_form_alter(&$form, $form_state) {
+    /* @var Drupal\node\NodeInterface $node */
+    $node_type = $form_state->getFormObject()->getEntity();
+
+    $form['purl'] = array(
+      '#type' => 'details',
+      '#title' => t('PURL settings'),
+      '#group' => 'additional_settings',
+    );
+    $form['purl']['keep_context'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Keep context of the node.'),
+      '#default_value' => $node_type->getThirdPartySetting('purl', 'keep_context', 0),
+      '#description' => t('This allows a node-type PURL context.'),
+    );
+
+    $form['#entity_builders'][] = 'purl_form_node_type_form_builder';
+}
+
+/**
+ * Entity form builder for the node type form to map some values to third party
+ * settings
+ */
+function purl_form_node_type_form_builder($entity_type, NodeTypeInterface $type, &$form, $form_state) {
+  if ($form_state->getValue('keep_context') == 1) {
+    $type->setThirdPartySetting('purl', 'keep_context', $form_state->getValue('keep_context'));
+    return;
+  }
+
+  $type->unsetThirdPartySetting('purl', 'keep_context');
 }
 
 /**

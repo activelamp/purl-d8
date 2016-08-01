@@ -1,0 +1,7 @@
+node.type.*.third_party.keep_context:
+  type: mapping
+  label: 'Purl Maintain Node Context'
+  mapping:
+    keep_context:
+      type: boolean
+      label: 'Enable/disable context for this node type'

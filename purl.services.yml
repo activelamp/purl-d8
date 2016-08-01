@@ -33,6 +33,12 @@ services:
     tags:
       - { name: event_subscriber }
 
+  purl.purl_node_context_routes:
+    class: Drupal\purl\Event\PurlNodeContextRoutes
+    arguments: ['@entity_type.manager', '@current_route_match', '@purl.matched_modifiers']
+    tags:
+      - { name: event_subscriber }
+
   cache_context.purl:
     class: Drupal\purl\Cache\Context\PurlCacheContext
     tags:
