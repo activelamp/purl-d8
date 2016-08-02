@@ -70,10 +70,12 @@ class PurlNodeContextRoutes implements EventSubscriberInterface {
         ]);
         try {
           $redirect_response = new TrustedRedirectResponse($url->toString());
+          $redirect_response->getCacheableMetadata()->setCacheMaxAge(0);
           $modifiers = $event->getRequest()->attributes->get('purl.matched_modifiers', []);
           $new_event = new ExitedContextEvent($event->getRequest(), $redirect_response, $this->routeMatch, $modifiers);
           $dispatcher_interface->dispatch(PurlEvents::EXITED_CONTEXT, $new_event);
           $event->setResponse($new_event->getResponse());
+          return;
         }
         catch (RedirectLoopException $e) {
           \Drupal::logger('redirect')->warning($e->getMessage());
