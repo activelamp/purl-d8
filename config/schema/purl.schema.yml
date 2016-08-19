@@ -5,3 +5,17 @@ node.type.*.third_party.keep_context:
     keep_context:
       type: boolean
       label: 'Enable/disable context for this node type'
+
+purl.purl_provider.*:
+  type: config_entity
+  label: 'PURL Provider Config'
+  mapping:
+    provider_key:
+      type: string
+      label: 'Provider key'
+    label:
+      type: label
+      label: 'Label'
+    method:
+      type: string
+      label: 'Method'
