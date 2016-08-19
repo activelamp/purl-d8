@@ -1,34 +1,67 @@
-# Admin screens
+# # Admin screens
 
-purl.admin:
-  path: admin/config/search/purl
+# purl.admin:
+#   path: admin/config/search/purl
+#   defaults:
+#     _controller: Drupal\purl\Controller\ProvidersController::providers
+#     _title: Persistent URLs
+#   requirements:
+#     _permission: 'administer'
+
+# #purl.admin.methods:
+#   #path: admin/config/search/purl/methods
+#   #defaults:
+#     #_controller: Drupal\purl\Controller\ManageMethodsController::methods
+#     #_title: PURL Methods
+#   #requirements:
+#     #_permission: 'administer'
+
+purl.modifiers:
+   path: admin/config/search/purl/modifiers
+   defaults:
+     _controller: Drupal\purl\Controller\ModifiersController::modifiers
+     _title: PURL Modifiers
+   requirements:
+     _permission: 'administer'
+ # POST actions
+
+# purl.admin.save_providers_config:
+#   path: admin/config/search/purl/save-settings
+#   defaults:
+#     _controller: Drupal\purl\Controller\ProvidersController::saveProviderSettings
+#     _title: Persistent URLs
+#   requirements:
+#     _permission: 'administer'
+
+
+entity.purl_provider.collection:
+  path: '/admin/config/search/purl'
   defaults:
-    _controller: Drupal\purl\Controller\ProvidersController::providers
-    _title: Persistent URLs
+    _entity_list: 'purl_provider'
+    _title: 'PURL Provider Configuration'
   requirements:
-    _permission: 'administer'
+    _permission: 'administer site configuration'
 
-#purl.admin.methods:
-  #path: admin/config/search/purl/methods
-  #defaults:
-    #_controller: Drupal\purl\Controller\ManageMethodsController::methods
-    #_title: PURL Methods
-  #requirements:
-    #_permission: 'administer'
-
-purl.admin.modifiers:
-  path: admin/config/search/purl/modifiers
+entity.purl_provider.add_form:
+  path: '/admin/config/search/purl/provider/add'
   defaults:
-    _controller: Drupal\purl\Controller\ModifiersController::modifiers
-    _title: PURL Modifiers
+    _entity_form: 'purl_provider.add'
+    _title: 'Add PURL Provider'
   requirements:
-    _permission: 'administer'
-# POST actions
+    _permission: 'administer site configuration'
 
-purl.admin.save_providers_config:
-  path: admin/config/search/purl/save-settings
+entity.purl_provider.edit_form:
+  path: '/admin/config/search/pur/provider/{purl_provider}'
   defaults:
-    _controller: Drupal\purl\Controller\ProvidersController::saveProviderSettings
-    _title: Persistent URLs
+    _entity_form: 'purl_provider.edit'
+    _title: 'Edit PURL Provider'
   requirements:
-    _permission: 'administer'
+    _permission: 'administer site configuration'
+
+entity.purl_provider.delete_form:
+  path: '/admin/config/search/purl/provider/{purl_provider}/delete'
+  defaults:
+    _entity_form: 'purl_provider.delete'
+    _title: 'Delete PURL Provider'
+  requirements:
+    _permission: 'administer site configuration'

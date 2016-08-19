@@ -1,16 +1,16 @@
 # purl.links.task.yml
 
-purl.admin:
-  route_name: purl.admin
-  title: Providers
-  base_route: purl.admin
-  weight: 0
+#purl.admin:
+  #route_name: purl.admin
+  #title: Providers
+  #base_route: purl.admin
+  #weight: 0
 
-purl.admin.modifiers:
-  route_name: purl.admin.modifiers
-  title: Modifiers
-  base_route: purl.admin
-  weight: 10
+#purl.admin.modifiers:
+  #route_name: purl.admin.modifiers
+  #title: Modifiers
+  #base_route: purl.admin
+  #weight: 10
 
 #purl.admin.methods:
   #route_name: purl.admin.methods

@@ -35,6 +35,7 @@ class RebuildIndex implements EventSubscriberInterface
 
     public function onRequest(GetResponseEvent $event, $eventName, EventDispatcherInterface $dispatcher)
     {
+        return;
         $this->modifierIndex->performDueRebuilds();
     }
 }

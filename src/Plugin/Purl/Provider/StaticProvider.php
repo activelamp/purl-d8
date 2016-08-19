@@ -6,7 +6,8 @@ use Drupal\purl\Annotation\PurlProvider;
 
 /**
  * @PurlProvider(
- *      id="static"
+ *      id="static",
+ *      label=@Translation("Static")
  * )
  */
 class StaticProvider extends ProviderAbstract

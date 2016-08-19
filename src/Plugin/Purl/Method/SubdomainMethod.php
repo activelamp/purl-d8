@@ -14,7 +14,7 @@ use Drupal\Core\Site\Settings;
  *     name="Subdomain"
  * )
  */
-class SubdomainMethod implements MethodInterface, ContainerAwareInterface
+class SubdomainMethod extends MethodAbstract implements MethodInterface, ContainerAwareInterface
 {
     use ContainerAwareTrait;
 

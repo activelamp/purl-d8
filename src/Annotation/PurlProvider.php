@@ -13,9 +13,9 @@ class PurlProvider extends Plugin
     {
         parent::__construct($values);
 
-        if (!isset($this->definition['name'])) {
+        if (!isset($this->definition['label'])) {
             $id = preg_replace('/([^a-zA-Z0-9])+/', ' ', $this->definition['id']);
-            $this->definition['name'] = ucwords($id);
+            $this->definition['label'] = ucwords($id);
         }
     }
 }

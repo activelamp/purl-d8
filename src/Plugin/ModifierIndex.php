@@ -3,104 +3,45 @@
 namespace Drupal\purl\Plugin;
 
 use Drupal\purl\Plugin\Purl\Provider\ProviderInterface;
+use Drupal\purl\Entity\Provider;
 use Drupal\Core\Database\Connection;
 
+/**
+ * Create caching version by wrapping `getProviderModifiers`
+ *
+ */
 class ModifierIndex
 {
     protected $connection;
 
     protected $providerManager;
 
-    public function __construct(ProviderManager $providerManager, Connection $connection)
+    public function __construct(ProviderManager $providerManager)
     {
         $this->providerManager = $providerManager;
-        $this->connection = $connection;
     }
 
     public function findModifiers()
     {
-        $result = $this->connection->select('purl_modifiers', 'p')
-            ->fields('p', array('provider', 'modifier', 'value'))
-            ->execute();
+        $ids = \Drupal::entityQuery('purl_provider')->execute();
 
-        return array_map(function ($row) {
-            return array_merge((array) $row, array('value' => unserialize($row->value)));
-        }, $result->fetchAll());
-    }
-
-    public function indexModifiers(ProviderInterface $provider, $method)
-    {
-        $id = $provider->getId();
-        $modifiers = $provider->getModifiers();
-
-        if (!is_array($modifiers)) {
-            return;
-        }
-
-        $this->deleteEntriesByProvider($provider->getId());
-
-        foreach ($modifiers as $modifier => $value) {
-            $this->connection->insert('purl_modifiers')
-                ->fields(array(
+        $modifiers = [];
+        foreach (Provider::loadMultiple($ids) as $provider) {
+            foreach ($this->getProviderModifiers($provider) as $modifier => $value) {
+                $modifiers[] = [
+                    'provider' => $provider,
                     'modifier' => $modifier,
-                    'provider' => $id,
-                    'value' => serialize($value)
-                ))->execute();
+                    'value' => $value
+                ];
+            }
         }
 
-        $this->connection->update('purl_providers_settings')
-            ->condition('provider', $provider->getId())
-            ->fields(array('rebuild' => 0))
-            ->execute();
+        return $modifiers;
+
     }
 
-    public function deleteEntriesByProvider($providerId)
+    public function getProviderModifiers(Provider $provider)
     {
-        $this->connection->delete('purl_modifiers')
-            ->condition('provider', $providerId)
-            ->execute();
-    }
-
-    public function deleteAll()
-    {
-        $this->connection->delete('purl_modifiers')->execute();
-    }
-
-    public function rebuild($providerId = null, $immediately = false)
-    {
-
-        if ($immediately) {
-
-            if (!$providerId) {
-                throw new \BadMethodCallException('A provider must be specified during immediate rebuilds.');
-            }
-
-            $provider = $this->providerManager->getProvider($providerId);
-            $definition = $this->providerManager->getDefinition($providerId);
-            if (!$definition['method']) {
-                return;
-            }
-            $this->indexModifiers($providerId, $definition['method']);
-        } else {
-            $statement = $this->connection->update('purl_providers_settings')->fields(array('rebuild' => 1));
-
-            if ($providerId) {
-                $statement->condition('provider', $providerId);
-            }
-            $statement->execute();
-        }
-    }
-
-    public function performDueRebuilds()
-    {
-        $result = $this->connection->select('purl_providers_settings', 'p')
-            ->fields('p', array('provider', 'method'))
-            ->condition('p.rebuild', 1)
-            ->execute();
-
-        foreach ($result->fetchAll() as $row) {
-            $provider = $this->providerManager->getProvider($row->provider);
-            $this->indexModifiers($provider, $row->method);
-        }
+        return $provider->getProviderPlugin()->getModifiers();
     }
 }

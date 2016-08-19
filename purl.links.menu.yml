@@ -1,6 +1,6 @@
 # purl.links.menu.yml
 
-purl.admin:
-  route_name: purl.admin
-  title: Persistent URLs
-  parent: system.admin_config_search
+#purl.admin:
+  #route_name: purl.admin
+  #title: Persistent URLs
+  #parent: system.admin_config_search

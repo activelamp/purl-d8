@@ -2,17 +2,18 @@
 
 namespace Drupal\purl\Event;
 
+use Drupal\purl\Entity\Provider;
+use Drupal\purl\MatchedModifiers;
 use Drupal\purl\Plugin\MethodPluginManager;
-use Drupal\purl\Plugin\ProviderManager;
 use Drupal\purl\Plugin\ModifierIndex;
+use Drupal\purl\Plugin\ProviderManager;
 use Drupal\purl\Plugin\Purl\Method\RequestAlteringInterface;
+use Drupal\purl\PurlEvents;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Drupal\purl\PurlEvents;
-use Drupal\purl\MatchedModifiers;
 
 /**
  * ALTERNATIVE APPROACH IS ENCAPSULATE METHOD PLUGIN LOGIC WITH A PATH
@@ -64,32 +65,13 @@ class RequestSubscriber implements EventSubscriberInterface
 
     protected function getModifiers()
     {
-        $modifiers = $this->modifierIndex->findModifiers();
-
-        // This should no longer be necessary once caching issue in
-        // ProviderManager is resolved.
-        foreach ($modifiers as $i => $modifier) {
-            $config = $this->getProviderConfig($modifier['provider']);
-            $modifiers[$i]['method'] = $config['method'];
-        }
-
-        return $modifiers;
+        return $this->modifierIndex->findModifiers();
     }
 
-    /**
-     * This should no longer be necessary once caching issue in
-     * ProviderManager is resolved.
-     *
-     * @return array
-     */
-    protected function getProviderConfig($id)
+    public function getProvider($id)
     {
-        if (!isset($this->providerConfigs[$id])) {
-            $this->providerConfigs[$id] = $this->providerManager->getProviderConfiguration($id);
-        }
-        return $this->providerConfigs[$id];
+        return Provider::load($id);
     }
-
 
     public function onRequest(GetResponseEvent $event, $eventName, EventDispatcherInterface $dispatcher)
     {
@@ -101,41 +83,38 @@ class RequestSubscriber implements EventSubscriberInterface
 
         foreach ($modifiers as $modifier) {
 
-            $providerConfig = $this->getProviderConfig($modifier['provider']);
-            $methodKey = $providerConfig['method'];
-            $modifierKey = $modifier['modifier'];
+            $provider = $modifier['provider'];
 
-            if (!$this->methodManager->hasMethodPlugin($methodKey)) {
+            if (!$provider) {
                 continue;
             }
 
-            $methodPlugin = $this->methodManager->getMethodPlugin($methodKey);
+            $modifierKey = $modifier['modifier'];
 
+            if (!$provider->getMethodPlugin()) {
+                continue;
+            }
+
+            $methodPlugin = $provider->getMethodPlugin();
             $contains = $methodPlugin->contains($request, $modifierKey);
 
             if ($contains) {
-
                 $matchedModifiers[] = array(
-                    'method_plugin' => $methodPlugin,
+                    'method' => $methodPlugin,
                     'modifier' => $modifierKey,
                     'provider' => $modifier['provider'],
                     'value' => $modifier['value'],
-                    'method' => $methodKey,
                 );
-
-                //if ($methodPlugin instanceof RequestAlteringInterface) {
-                    //$requestAlteringMethods[] = $matchedModifiers;
-                //}
             }
         }
 
         foreach ($matchedModifiers as $matched) {
 
-            if (!$matched['method_plugin'] instanceof RequestAlteringInterface) {
+            if (!$matched['method'] instanceof RequestAlteringInterface) {
                 continue;
             }
 
-            $matched['method_plugin']->alterRequest($request, $matched['modifier']);
+            $matched['method']->alterRequest($request, $matched['modifier']);
             $this->reinitializeRequest($request);
         }
 
@@ -159,13 +138,13 @@ class RequestSubscriber implements EventSubscriberInterface
      * request, we will need to run its iniitalize method to make it do it
      * itself. This will be done after a method plugin alters the server
      * attributes i.e. $request->server->set('REQUEST_URI', '/new/uri')
-     * 
+     *
      * I don't have a better solution that doesn't feel hacky.
      */
     private function reinitializeRequest(Request $request)
     {
         $request->initialize(
-            $request->query->all(), 
+            $request->query->all(),
             $request->request->all(),
             $request->attributes->all(),
             $request->cookies->all(),

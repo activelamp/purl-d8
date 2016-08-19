@@ -38,7 +38,7 @@ class PurlContextOutboundRouteProcessor implements OutboundRouteProcessorInterfa
     public function processOutbound($route_name, Route $route, array &$parameters, BubbleableMetadata $bubbleable_metadata = NULL)
     {
         foreach ($this->events as $event) {
-            $method = $this->manager->getMethodPlugin($event->getMethod());
+            $method = $event->getMethod();
             if ($method instanceof OutboundRouteAlteringInterface) {
                 $path = $method->alterOutboundRoute($route_name, $event->getModifier(), $route, $parameters, $bubbleable_metadata);
             }

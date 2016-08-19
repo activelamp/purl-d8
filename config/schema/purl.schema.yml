@@ -16,6 +16,6 @@ purl.purl_provider.*:
     label:
       type: label
       label: 'Label'
-    method:
+    method_key:
       type: string
-      label: 'Method'
+      label: 'Method key'
