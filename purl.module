@@ -5,11 +5,6 @@ use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\node\NodeTypeInterface;
 use Drupal\Core\Form;
 
-function purl_rebuild() {
-    $modifierIndex = \Drupal::service('purl.modifier_index');
-    $modifierIndex->deleteAll();
-    $modifierIndex->rebuild();
-}
 
 function purl_form_menu_edit_form_alter(&$form, $form_state) {
     // Edit menu as whole
@@ -51,7 +46,6 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, $form_
 }
 
 function purl_form_alter(&$form, $form_state) {
-    //kint($form);
 }
 
 /**

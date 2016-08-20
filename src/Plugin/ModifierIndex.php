@@ -16,11 +16,6 @@ class ModifierIndex
 
     protected $providerManager;
 
-    public function __construct(ProviderManager $providerManager)
-    {
-        $this->providerManager = $providerManager;
-    }
-
     public function findModifiers()
     {
         $ids = \Drupal::entityQuery('purl_provider')->execute();

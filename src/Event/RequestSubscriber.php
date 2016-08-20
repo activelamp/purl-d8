@@ -23,36 +23,14 @@ class RequestSubscriber implements EventSubscriberInterface
 {
 
     /**
-     * @var MethodManager
-     */
-    protected $methodManager;
-
-    /**
-     * @var ProviderManager
-     */
-    protected $providerManager;
-
-    /**
      * @var ModifierIndex
      */
     protected $modifierIndex;
 
-    /**
-     * @var MatchedModifiers
-     */
-    protected $matchedModifiers;
-
-
     public function __construct(
-        ModifierIndex $modifierIndex,
-        ProviderManager $providerManager,
-        MethodPluginManager $methodManager,
-        MatchedModifiers $matchedModifiers
+        ModifierIndex $modifierIndex
     ) {
         $this->modifierIndex = $modifierIndex;
-        $this->providerManager = $providerManager;
-        $this->methodManager = $methodManager;
-        $this->matchedModifiers = $matchedModifiers;
     }
 
     public static function getSubscribedEvents()

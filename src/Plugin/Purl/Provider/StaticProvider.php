@@ -19,7 +19,7 @@ class StaticProvider extends ProviderAbstract
             'deux' => 2,
             'trois' => 3,
             'quatre' => 4,
-            'cuinq' => 5,
+            'cinq' => 5,
         );
     }
 }
