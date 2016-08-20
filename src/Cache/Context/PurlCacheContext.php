@@ -86,7 +86,7 @@ class PurlCacheContext implements CacheContextInterface, EventSubscriberInterfac
 
     public function onMatch(ModifierMatchedEvent $event)
     {
-        $this->contexts[$event->getMethod()]  = $event->getModifier();
+        $this->contexts[$event->getMethod()->getId()]  = $event->getModifier();
         ksort($this->contexts);
     }
 }

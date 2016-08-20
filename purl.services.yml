@@ -19,6 +19,7 @@ services:
     class: Drupal\purl\Event\RequestSubscriber
     arguments: 
       - '@purl.modifier_index'
+      - '@purl.matched_modifiers'
     tags:
       - { name: event_subscriber }
 

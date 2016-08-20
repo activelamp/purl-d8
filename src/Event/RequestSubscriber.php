@@ -28,9 +28,11 @@ class RequestSubscriber implements EventSubscriberInterface
     protected $modifierIndex;
 
     public function __construct(
-        ModifierIndex $modifierIndex
+        ModifierIndex $modifierIndex,
+        MatchedModifiers $matchedModifiers
     ) {
         $this->modifierIndex = $modifierIndex;
+        $this->matchedModifiers = $matchedModifiers;
     }
 
     public static function getSubscribedEvents()
@@ -62,6 +64,7 @@ class RequestSubscriber implements EventSubscriberInterface
         foreach ($modifiers as $modifier) {
 
             $provider = $modifier['provider'];
+            $modifier['provider_key'] = $provider->id();
 
             if (!$provider) {
                 continue;
@@ -80,6 +83,7 @@ class RequestSubscriber implements EventSubscriberInterface
                 $matchedModifiers[] = array(
                     'method' => $methodPlugin,
                     'modifier' => $modifierKey,
+                    'provider_key' => $modifier['provider_key'],
                     'provider' => $modifier['provider'],
                     'value' => $modifier['value'],
                 );
@@ -99,7 +103,7 @@ class RequestSubscriber implements EventSubscriberInterface
         foreach ($matchedModifiers as $identifier) {
             $event = new ModifierMatchedEvent(
                 $request,
-                $identifier['provider'],
+                $identifier['provider_key'],
                 $identifier['method'],
                 $identifier['modifier'],
                 $identifier['value']
