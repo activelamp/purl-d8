@@ -11,15 +11,37 @@ use Drupal\Core\Form;
 function purl_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   if ($entity_type->id() !== 'menu_link_content') {
-    return; 
+    return;
   }
-  var_dump($entity_type->id());
-  var_dump(get_class($entity_type));
+
+  $fields = [];
+
+  $fields['purl_provider'] = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('PURL provider'))
+    ->setName('purl_provider')
+    ->setRevisionable(false)
+    ->setTranslatable(false)
+    ->setDescription('PURL provider')
+    ->setSettings([
+      'target_type' => 'purl_provider',
+      'default_value' => null,
+    ]);
+
+  $fields['purl_modifier'] = BaseFieldDefinition::create('string')
+    ->setLabel(t('PURL modifier'))
+    ->setName('purl_modifier')
+    ->setRevisionable(false)
+    ->setDescription('PURL modififer')
+    ->setSettings([
+      'default_value' => null,
+      'max_length' => 255,
+    ]);
+
+  return $fields;
 }
 
 function purl_form_menu_edit_form_alter(&$form, $form_state) {
-  $ids = \Drupal::entityQuery('purl_provider')->execute();
-  $providers = Provider::loadMultiple($ids);
+  $providers = Provider::loadMultiple();
 
   $options = [null => '-- None --'];
 
@@ -49,15 +71,19 @@ function purl_form_menu_edit_form_alter(&$form, $form_state) {
 
 function purl_form_menu_link_content_menu_link_content_form_alter(&$form, FormStateInterface $form_state) {
 
-  $ids = \Drupal::entityQuery('purl_provider')->execute();
-  $providers = Provider::loadMultiple($ids);
+  $providers = Provider::loadMultiple();
 
   $menuLinkEntity = $form_state->getBuildInfo()['callback_object']->getEntity();
-  $options = $menuLinkEntity->link->first()->options;
-  var_dump($options);
 
-  $purlOptions = isset($options['purl']) ? $options['purl'] : ['purl_modifier' => null];
+  $selected = null;
 
+  if (isset($menuLinkEntity->purl_modifier[0]) && isset($menuLinkEntity->purl_provider[0])) {
+    $selected = sprintf(
+      '%s:%s',
+      $menuLinkEntity->purl_provider[0]->getValue()['target_id'],
+      $menuLinkEntity->purl_modifier[0]->getValue()['value']
+    );
+  }
 
   $options = [null => '-- None --'];
 
@@ -68,6 +94,8 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, FormSt
     }
     $options[$provider->getLabel()] = $modifiers;
   }
+
+  //var_dump($form['options']);
 
   $form['purl'] = [
     '#tree' => true,
@@ -81,7 +109,7 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, FormSt
     '#type' => 'select',
     '#title' => 'PURL modifier',
     '#options' => $options,
-    '#default_value' => $purlOptions['purl_modifier'],
+    '#default_value' => $selected
   ];
   $form['#entity_builders'][] = 'purl_form_menu_link_content_menu_link_content_form_builder';
 }
@@ -91,12 +119,19 @@ function purl_form_menu_link_content_menu_link_content_form_builder($entity_type
   $menuLinkEntity = $form_state->getBuildInfo()['callback_object']->getEntity();
 
   if ($form_state->getValue('purl') && $form_state->getValue('purl')['purl_modifier']) {
-    $purlOptions = $form_state->getValue('purl');
-    $options = $menuLinkEntity->link->first()->options;
-    $options['purl'] = $purlOptions;
-    $menuLinkEntity->link->first()->options = $options;
+    $purlSpec = $form_state->getValue('purl')['purl_modifier'];
+    $tokens = explode(':', $purlSpec);
+    $providerKey = array_shift($tokens);
+    $modifier = implode(':', $tokens);
+    $provider = Provider::load($providerKey);
+    $menuLinkEntity->set('purl_provider', $provider);
+    $menuLinkEntity->set('purl_modifier', $modifier);
+  } else {
+    $menuLinkEntity->set('purl_modifier', null);
+    $menuLinkEntity->set('purl_provider', null);
   }
 }
+
 
 function purl_form_alter(&$form, $form_state) {
 }
