@@ -14,21 +14,11 @@ services:
 
   purl.modifier_index:
     class: Drupal\purl\Plugin\ModifierIndex
-    arguments:
-      - '@purl.plugin.provider_manager'
-      - '@database'
-
-  #purl.identifier_provider.composite:
-    #class: Drupal\purl\Plugin\Purl\Identifier\CompositeIdentifierProvider
-    #arguments:
-        #- [ '@purl.identifier_provider.test' ]
 
   purl.request_subscriber:
     class: Drupal\purl\Event\RequestSubscriber
     arguments: 
       - '@purl.modifier_index'
-      - '@purl.plugin.provider_manager'
-      - '@purl.plugin.method_manager'
       - '@purl.matched_modifiers'
     tags:
       - { name: event_subscriber }

@@ -1,10 +1,10 @@
 <?php
 
-namespace Drupal\purl\Plugin\Purl\Provider;
+namespace Drupal\purl\Plugin\Purl\Method;
 
 use Drupal\Component\Plugin\PluginBase;
 
-abstract class ProviderAbstract  extends PluginBase implements ProviderInterface
+abstract class MethodAbstract extends PluginBase implements MethodInterface
 {
     public function getId() 
     {

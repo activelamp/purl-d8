@@ -12,4 +12,8 @@ interface MethodInterface
     public function enterContext($modifier, $path, array &$options);
 
     public function exitContext($modifier, $path, array &$options);
+
+    public function getId();
+
+    public function getLabel();
 }

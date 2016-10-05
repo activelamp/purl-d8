@@ -1,13 +1,13 @@
 # purl.links.task.yml
 
 purl.admin:
-  route_name: purl.admin
+  route_name: entity.purl_provider.collection
   title: Providers
   base_route: purl.admin
   weight: 0
 
 purl.admin.modifiers:
-  route_name: purl.admin.modifiers
+  route_name: purl.modifiers
   title: Modifiers
   base_route: purl.admin
   weight: 10

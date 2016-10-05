@@ -53,7 +53,7 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
     public function exitContext(ModifierMatchedEvent $event, $path, $options)
     {
 
-        $method = $this->methodManager->getMethodPlugin($event->getMethod());
+        $method = $event->getMethod();
         $result = $method->exitContext($event->getModifier(), $path, $options);
 
         return $result === null ? $path : $result;
@@ -62,8 +62,7 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
 
     public function enterContext(ModifierMatchedEvent $event, $path, $options)
     {
-
-        $method = $this->methodManager->getMethodPlugin($event->getMethod());
+        $method = $event->getMethod();
         $result = $method->enterContext($event->getModifier(), $path, $options);
 
         return $result === null ? $path : $result;

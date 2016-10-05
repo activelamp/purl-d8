@@ -28,7 +28,7 @@ interface ProviderInterface
      */
     public function getModifiers();
 
-    public function setId($id);
-
     public function getId();
+
+    public function getLabel();
 }

@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
  *     id="path_prefix"
  * )
  */
-class PathPrefixMethod implements MethodInterface, RequestAlteringInterface
+class PathPrefixMethod extends MethodAbstract implements MethodInterface, RequestAlteringInterface
 {
     public function contains(Request $request, $modifier)
     {

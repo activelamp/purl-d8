@@ -7,6 +7,7 @@ use Drupal\purl\Plugin\MethodPluginManager;
 use Drupal\purl\Plugin\ModifierIndex;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Drupal\purl\Entity\Provider;
 
 class ModifiersController extends BaseController
 {
@@ -19,21 +20,15 @@ class ModifiersController extends BaseController
     public static function create(ContainerInterface $container)
     {
         return new self(
-            $container->get('purl.plugin.provider_manager'),
-            $container->get('purl.plugin.method_manager'),
             $container->get('purl.modifier_index')
         );
     }
 
     public function __construct(
-        ProviderManager $providerManager,
-        MethodPluginManager $methodManager,
         ModifierIndex $modifierIndex
     ) {
 
         $this->modifierIndex = $modifierIndex;
-        $this->providerManager = $providerManager;
-        $this->methodManager = $methodManager;
     }
 
     private function stringify($value)
@@ -50,7 +45,10 @@ class ModifiersController extends BaseController
     {
         $build = array();
 
-        $headers = array('provider', 'method', 'modifier', 'value');
+        $ids = \Drupal::entityQuery('purl_provider')
+            ->execute();
+
+        $headers = array('provider', 'modifier', 'value');
 
         $headers = array_map(function ($header) {
             return array('data' => t($header));
@@ -60,17 +58,16 @@ class ModifiersController extends BaseController
 
         foreach ($this->modifierIndex->findModifiers() as $modifier) {
 
-            $provider = $this->providerManager->getDefinition($modifier['provider']);
-            $method = $this->methodManager->getDefinition($provider['method']);
+            $provider = $modifier['provider'];
+
+            if (!$provider) {
+                continue;
+            }
 
             $row = array();
 
             $row[] = array(
-                'data' => $provider['name'],
-            );
-
-            $row[] = array(
-                'data' => $method['name'],
+                'data' => $provider->getLabel()
             );
 
             $row[] = array(

@@ -1,0 +1,5 @@
+entity.purl_provider.add_form:
+  route_name: 'entity.purl_provider.add_form'
+  title: 'Add PURL Provider'
+  appears_on:
+    - entity.purl_provider.collection

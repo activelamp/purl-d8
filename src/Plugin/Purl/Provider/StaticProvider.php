@@ -6,7 +6,8 @@ use Drupal\purl\Annotation\PurlProvider;
 
 /**
  * @PurlProvider(
- *      id="static"
+ *      id="static",
+ *      label=@Translation("Static")
  * )
  */
 class StaticProvider extends ProviderAbstract
@@ -18,7 +19,7 @@ class StaticProvider extends ProviderAbstract
             'deux' => 2,
             'trois' => 3,
             'quatre' => 4,
-            'cuinq' => 5,
+            'cinq' => 5,
         );
     }
 }
