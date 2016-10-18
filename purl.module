@@ -37,6 +37,15 @@ function purl_entity_base_field_info(EntityTypeInterface $entity_type) {
       'max_length' => 255,
     ]);
 
+  $fields['purl_strip_context'] = BaseFieldDefinition::create('boolean')
+    ->setLabel(t('PURL strip context'))
+    ->setName('purl_strip_context')
+    ->setRevisionable(false)
+    ->setDescription('PURL strip context')
+    ->setSettings([
+      'default_value' => false,
+    ]);
+
   return $fields;
 }
 
@@ -77,7 +86,9 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, FormSt
 
   $selected = null;
 
-  if (isset($menuLinkEntity->purl_modifier[0]) && isset($menuLinkEntity->purl_provider[0])) {
+  if (isset($menuLinkEntity->purl_strip_context[0]) && $menuLinkEntity->purl_strip_context[0]->getValue()['value'] == 1) {
+    $selected = '__STRIP__';
+  } elseif (isset($menuLinkEntity->purl_modifier[0]) && isset($menuLinkEntity->purl_provider[0])) {
     $selected = sprintf(
       '%s:%s',
       $menuLinkEntity->purl_provider[0]->getValue()['target_id'],
@@ -85,7 +96,7 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, FormSt
     );
   }
 
-  $options = [null => '-- None --'];
+  $options = [null => '-- Maintain context --', '__STRIP__' => 'Strip PURL context'];
 
   foreach ($providers as $provider) {
     $modifiers= [];
@@ -121,12 +132,20 @@ function purl_form_menu_link_content_menu_link_content_form_builder($entity_type
   if ($form_state->getValue('purl') && $form_state->getValue('purl')['purl_modifier']) {
     $purlSpec = $form_state->getValue('purl')['purl_modifier'];
     $tokens = explode(':', $purlSpec);
-    $providerKey = array_shift($tokens);
-    $modifier = implode(':', $tokens);
-    $provider = Provider::load($providerKey);
+    if (count($tokens) == 1) { // Must be `__STRIP__`
+      $provider = null;
+      $modifier = null;
+      $menuLinkEntity->set('purl_strip_context', true);
+    } else {
+      $providerKey = array_shift($tokens);
+      $modifier = implode(':', $tokens);
+      $provider = Provider::load($providerKey);
+      $menuLinkEntity->set('purl_strip_context', false);
+    }
     $menuLinkEntity->set('purl_provider', $provider);
     $menuLinkEntity->set('purl_modifier', $modifier);
   } else {
+    $menuLinkEntity->set('purl_strip_context', false);
     $menuLinkEntity->set('purl_modifier', null);
     $menuLinkEntity->set('purl_provider', null);
   }
