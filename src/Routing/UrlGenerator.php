@@ -7,6 +7,8 @@ use Drupal\Core\RouteProcessor\OutboundRouteProcessorInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Routing\UrlGenerator as UrlGeneratorBase;
 use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\purl\MatchedModifiers;
+use Drupal\purl\Plugin\Purl\Method\PreGenerateHookInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Exception\InvalidParameterException;
 use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
@@ -19,11 +21,20 @@ use Symfony\Component\Routing\RequestContext;
 class UrlGenerator implements UrlGeneratorInterface
 {
 
+    /**
+     * @var UrlGeneratorInterface
+     */
     protected $urlGenerator;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator)
+    /**
+     * @var MatchedModifiers
+     */
+    protected $matchedModifiers;
+
+    public function __construct(UrlGeneratorInterface $urlGenerator, MatchedModifiers $matchedModifiers)
     {
         $this->urlGenerator = $urlGenerator;
+        $this->matchedModifiers = $matchedModifiers;
     }
 
     /**
@@ -45,6 +56,12 @@ class UrlGenerator implements UrlGeneratorInterface
     {
         $hostOverride = null;
         $originalHost = null;
+
+        foreach ($this->matchedModifiers->getMatched() as $event) {
+          if ($event->getMethod() instanceof PreGenerateHookInterface) {
+            $event->getMethod()->preGenerate($options, $event->getModifier());
+          }
+        }
 
         if (isset($options['host']) && strlen((string) $options['host']) > 0) {
             $hostOverride = $options['host'];

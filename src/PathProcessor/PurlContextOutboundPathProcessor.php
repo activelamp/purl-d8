@@ -37,7 +37,7 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
             }
 
             foreach ($this->events as $event) {
-                $path = $this->exitContext($event, $path, $options);
+              $path = $this->exitContext($event, $path, $options);
             }
 
             return $path;
@@ -50,17 +50,16 @@ class PurlContextOutboundPathProcessor implements OutboundPathProcessorInterface
         return $path;
     }
 
-    public function exitContext(ModifierMatchedEvent $event, $path, $options)
+    public function exitContext(ModifierMatchedEvent $event, $path, &$options)
     {
 
         $method = $event->getMethod();
         $result = $method->exitContext($event->getModifier(), $path, $options);
 
         return $result === null ? $path : $result;
-
     }
 
-    public function enterContext(ModifierMatchedEvent $event, $path, $options)
+    public function enterContext(ModifierMatchedEvent $event, $path, &$options)
     {
         $method = $event->getMethod();
         $result = $method->enterContext($event->getModifier(), $path, $options);

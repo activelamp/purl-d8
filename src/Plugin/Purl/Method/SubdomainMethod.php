@@ -14,7 +14,7 @@ use Drupal\Core\Site\Settings;
  *     name="Subdomain"
  * )
  */
-class SubdomainMethod extends MethodAbstract implements MethodInterface, ContainerAwareInterface
+class SubdomainMethod extends MethodAbstract implements MethodInterface, ContainerAwareInterface, PreGenerateHookInterface
 {
     use ContainerAwareTrait;
 
@@ -80,5 +80,15 @@ class SubdomainMethod extends MethodAbstract implements MethodInterface, Contain
         $options['host'] = $host;
 
         return $path;
+    }
+
+    public function preGenerate(&$options, $modifier)
+    {
+        $baseHost = $this->getBaseHost();
+
+        if (array_key_exists('purl_context', $options) && !$options['purl_context']) {
+          $options['absolute'] = true;
+          $options['host'] = substr($baseHost, 0, strlen($modifier) + 1);
+        }
     }
 }

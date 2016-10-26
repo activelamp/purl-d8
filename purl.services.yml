@@ -61,13 +61,14 @@ services:
   # @TODO: Consider decorating @url_generator.non_bubbling instead.
   purl.url_generator:
     class: Drupal\purl\Routing\UrlGenerator
-    arguments: ['@url_generator.non_bubbling']
+    arguments: ['@url_generator.non_bubbling', '@purl.matched_modifiers']
     calls:
       - [setContext, ['@?router.request_context']]
 
   purl.matched_modifiers:
     class: Drupal\purl\MatchedModifiers
 
-  purl.default_tree_manipulators:
+  purl.menu_link_tree_manipulators:
     class: Drupal\purl\Menu\PurlMenuLinkTreeManipulators
-    arguments: ['@access_manager', '@current_user', '@entity.query']
+    arguments: ['@purl.matched_modifiers']
+

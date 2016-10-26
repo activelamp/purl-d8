@@ -27,6 +27,11 @@ class RequestSubscriber implements EventSubscriberInterface
      */
     protected $modifierIndex;
 
+    /**
+     * @var MatchedModifiers
+     */
+    protected $matchedModifiers;
+
     public function __construct(
         ModifierIndex $modifierIndex,
         MatchedModifiers $matchedModifiers
