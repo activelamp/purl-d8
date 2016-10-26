@@ -16,6 +16,8 @@ function purl_entity_base_field_info(EntityTypeInterface $entity_type) {
 
   $fields = [];
 
+  /* @todo Remove this; we don't need these extra fields anymore */
+
   $fields['purl_provider'] = BaseFieldDefinition::create('entity_reference')
     ->setLabel(t('PURL provider'))
     ->setName('purl_provider')
@@ -106,8 +108,6 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, FormSt
     $options[$provider->getLabel()] = $modifiers;
   }
 
-  //var_dump($form['options']);
-
   $form['purl'] = [
     '#tree' => true,
     '#type' => 'fieldset',
@@ -136,11 +136,15 @@ function purl_form_menu_link_content_menu_link_content_form_builder($entity_type
       $provider = null;
       $modifier = null;
       $menuLinkEntity->set('purl_strip_context', true);
+      $form_state->getValue('link')[0]['options'] = ['purl_context' => false];
     } else {
       $providerKey = array_shift($tokens);
       $modifier = implode(':', $tokens);
       $provider = Provider::load($providerKey);
       $menuLinkEntity->set('purl_strip_context', false);
+      $form_state->getValue('link')[0]['options'] = [
+        'purl_context' => ['provider' => $providerKey, 'modifier' => $modifier]
+      ];
     }
     $menuLinkEntity->set('purl_provider', $provider);
     $menuLinkEntity->set('purl_modifier', $modifier);
