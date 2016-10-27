@@ -12,9 +12,17 @@ class MatchedModifiers
     private $matched = array();
 
     /**
-     * @var ModifierMatchedEvent[]
+     * @return Event\ModifierMatchedEvent[]
      */
     public function getMatched()
+    {
+        return $this->getEvents();
+    }
+
+    /**
+     * @return Event\ModifierMatchedEvent[]
+     */
+    public function getEvents()
     {
         return $this->matched;
     }
@@ -27,5 +35,12 @@ class MatchedModifiers
     public function add(ModifierMatchedEvent $event)
     {
         $this->matched[] = $event;
+    }
+
+    public function createContexts($action = null)
+    {
+      return array_map(function (ModifierMatchedEvent $event) use ($action) {
+          return new Context($event->getModifier(), $event->getMethod(), $action);
+      }, $this->getMatched());
     }
 }

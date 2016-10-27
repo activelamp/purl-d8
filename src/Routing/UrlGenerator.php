@@ -7,6 +7,9 @@ use Drupal\Core\RouteProcessor\OutboundRouteProcessorInterface;
 use Drupal\Core\Routing\RouteProviderInterface;
 use Drupal\Core\Routing\UrlGenerator as UrlGeneratorBase;
 use Drupal\Core\Routing\UrlGeneratorInterface;
+use Drupal\purl\Context;
+use Drupal\purl\ContextHelper;
+use Drupal\purl\Entity\Provider;
 use Drupal\purl\MatchedModifiers;
 use Drupal\purl\Plugin\Purl\Method\PreGenerateHookInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -30,11 +33,16 @@ class UrlGenerator implements UrlGeneratorInterface
      * @var MatchedModifiers
      */
     protected $matchedModifiers;
+  /**
+   * @var ContextHelper
+   */
+  private $contextHelper;
 
-    public function __construct(UrlGeneratorInterface $urlGenerator, MatchedModifiers $matchedModifiers)
+  public function __construct(UrlGeneratorInterface $urlGenerator, MatchedModifiers $matchedModifiers, ContextHelper $contextHelper)
     {
         $this->urlGenerator = $urlGenerator;
         $this->matchedModifiers = $matchedModifiers;
+        $this->contextHelper = $contextHelper;
     }
 
     /**
@@ -57,11 +65,16 @@ class UrlGenerator implements UrlGeneratorInterface
         $hostOverride = null;
         $originalHost = null;
 
-        foreach ($this->matchedModifiers->getMatched() as $event) {
-          if ($event->getMethod() instanceof PreGenerateHookInterface) {
-            $event->getMethod()->preGenerate($options, $event->getModifier());
-          }
-        }
+        $action = array_key_exists('purl_context', $options) && $options['purl_context'] == false ?
+          Context::EXIT_CONTEXT : Context::ENTER_CONTEXT;
+
+        $this->contextHelper->preGenerate(
+          $this->matchedModifiers->createContexts($action),
+          $name,
+          $parameters,
+          $options,
+          $collect_bubbleable_metadata
+        );
 
         if (isset($options['host']) && strlen((string) $options['host']) > 0) {
             $hostOverride = $options['host'];

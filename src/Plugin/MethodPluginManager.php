@@ -62,4 +62,5 @@ class MethodPluginManager extends DefaultPluginManager implements MethodPluginMa
     {
         return $this->hasDefinition($id);
     }
+
 }

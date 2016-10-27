@@ -2,6 +2,7 @@
 
 namespace Drupal\purl\Plugin\Purl\Method;
 
+use Drupal\Core\Routing\RequestContext;
 use Drupal\purl\Annotation\PurlMethod;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
@@ -11,7 +12,11 @@ use Drupal\Core\Site\Settings;
 /**
  * @PurlMethod(
  *     id="subdomain",
- *     name="Subdomain"
+ *     name="Subdomain",
+ *     stages={
+ *        Drupal\purl\Plugin\Purl\Method\MethodInterface::STAGE_PROCESS_OUTBOUND,
+ *        Drupal\purl\Plugin\Purl\Method\MethodInterface::STAGE_PRE_GENERATE
+ *     }
  * )
  */
 class SubdomainMethod extends MethodAbstract implements MethodInterface, ContainerAwareInterface, PreGenerateHookInterface
@@ -46,49 +51,86 @@ class SubdomainMethod extends MethodAbstract implements MethodInterface, Contain
         return Settings::get('purl_base_domain');
     }
 
+    /**
+     * @return RequestContext
+     */
+    private function getRequestContext()
+    {
+      return $this->container->get('router.request_context');
+    }
+
     public function enterContext($modifier, $path, array &$options)
     {
         $baseHost = $this->getBaseHost();
 
+        // Can't do anything if this is not set.
         if (!$baseHost) {
            return null;
         }
 
-        $options['absolute'] = true;
+        $currentHost = isset($options['host']) ? $options['host'] : $this->getRequestContext()->getHost();
 
-        if ($this->hostContainsModifier($modifier, $baseHost)) {
+        $pattern = '#^(.+)\.' . preg_quote($baseHost, '#') . '$#';
+
+        $matches = [];
+        preg_match_all($pattern, $currentHost, $matches);
+
+        if (count($matches[0]) === 0) {
             return null;
         }
 
-        $options['host'] = sprintf('%s.%s', $modifier, $baseHost);
+        $subdomains = explode('.', $matches[1][0]);
+
+        if (in_array($modifier, $subdomains)) {
+            return null;
+        }
+
+        $subdomains[] = $modifier;
+
+        $options['absolute'] = true;
+        $options['host'] = sprintf('%s.%s', implode('.', $subdomains), $baseHost);
 
         return $path;
     }
 
     public function exitContext($modifier, $path, array &$options)
     {
+
         $baseHost = $this->getBaseHost();
 
-        if (!$this->hostContainsModifier($modifier, $baseHost)) {
+        // Can't do anything if this is not set.
+        if (!$baseHost) {
             return null;
         }
 
-        // Strip out modifier sub-domain.
-        $host = substr($baseHost, 0, strlen($modifier) + 1);
+        $currentHost = isset($options['host']) ? $options['host'] : $this->getRequestContext()->getHost();
+
+        $pattern = '#^(.+)\.' . preg_quote($baseHost, '#') . '$#';
+
+        $matches = [];
+        preg_match_all($pattern, $currentHost, $matches);
+
+        if (count($matches[0]) === 0) {
+            return null;
+        }
+
+        $subdomain = implode('.', array_filter(explode('.', $matches[1][0]), function ($m) use ($modifier) {
+          return $m !== $modifier;
+        }));
 
         $options['absolute'] = true;
-        $options['host'] = $host;
+        $options['host'] = sprintf('%s.%s', $subdomain, $baseHost);
 
         return $path;
     }
 
-    public function preGenerate(&$options, $modifier)
+    public function preGenerateEnter($modifier, $name, &$parameters, &$options, $collect_bubblable_metadata = false)
     {
-        $baseHost = $this->getBaseHost();
+        $this->enterContext($modifier, '', $options);
+    }
 
-        if (array_key_exists('purl_context', $options) && !$options['purl_context']) {
-          $options['absolute'] = true;
-          $options['host'] = substr($baseHost, 0, strlen($modifier) + 1);
-        }
+    public function preGenerateExit($modifier, $name, &$parameters, &$options, $collect_bubblable_metadata = false)
+    {
+        $this->exitContext($modifier, '', $options);
     }
 }
