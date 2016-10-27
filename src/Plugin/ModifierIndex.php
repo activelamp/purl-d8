@@ -2,41 +2,34 @@
 
 namespace Drupal\purl\Plugin;
 
-use Drupal\purl\Plugin\Purl\Provider\ProviderInterface;
 use Drupal\purl\Entity\Provider;
-use Drupal\Core\Database\Connection;
+use Drupal\purl\Modifier;
 
 /**
- * Create caching version by wrapping `getProviderModifiers`
- *
+ * @todo Create caching version by wrapping `getProviderModifiers`
  */
 class ModifierIndex
 {
-    protected $connection;
+  /**
+   * @return Modifier[]
+   */
+  public function findAll()
+  {
+    return array_reduce(array_map(array($this, 'getProviderModifiers'), Provider::loadMultiple()), 'array_merge', []);
+  }
 
-    protected $providerManager;
+  /**
+   * @param Provider $provider
+   * @return Modifier[]
+   */
+  public function getProviderModifiers(Provider $provider)
+  {
+    $modifiers = [];
 
-    public function findModifiers()
-    {
-        $ids = \Drupal::entityQuery('purl_provider')->execute();
-
-        $modifiers = [];
-        foreach (Provider::loadMultiple($ids) as $provider) {
-            foreach ($this->getProviderModifiers($provider) as $modifier => $value) {
-                $modifiers[] = [
-                    'provider' => $provider,
-                    'modifier' => $modifier,
-                    'value' => $value
-                ];
-            }
-        }
-
-        return $modifiers;
-
+    foreach ($provider->getProviderPlugin()->getModifierData() as $key => $value) {
+      $modifiers[] = new Modifier($key, $value, $provider->getMethodPlugin(), $provider);
     }
 
-    public function getProviderModifiers(Provider $provider)
-    {
-        return $provider->getProviderPlugin()->getModifiers();
-    }
+    return $modifiers;
+  }
 }

@@ -15,9 +15,9 @@ use Symfony\Component\DependencyInjection\Reference;
 
 class PurlServiceProvider extends ServiceProviderBase
 {
-    public function alter(ContainerBuilder $container)
-    {
-        $urlGeneratorDefinition = $container->getDefinition('url_generator');
-        $urlGeneratorDefinition->replaceArgument(0, new Reference('purl.url_generator'));
-    }
+  public function alter(ContainerBuilder $container)
+  {
+    $urlGeneratorDefinition = $container->getDefinition('url_generator');
+    $urlGeneratorDefinition->replaceArgument(0, new Reference('purl.url_generator'));
+  }
 }

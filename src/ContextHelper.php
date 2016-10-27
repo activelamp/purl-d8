@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: bez
- * Date: 10/26/16
- * Time: 5:18 PM
- */
 
 namespace Drupal\purl;
-
 
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Render\BubbleableMetadata;
@@ -18,93 +11,104 @@ use Symfony\Component\HttpFoundation\Request;
 class ContextHelper
 {
 
-    /**
-     * @var EntityStorageInterface
-     */
-    protected $storage;
+  /**
+   * @var EntityStorageInterface
+   */
+  protected $storage;
 
-    public function __construct(EntityStorageInterface $storage)
-    {
-      $this->storage = $storage;
-    }
+  public function __construct(EntityStorageInterface $storage)
+  {
+    $this->storage = $storage;
+  }
 
-    public function processOutbound(
-      array $contexts,
-      $path,
-      array &$options,
-      Request $request = null,
-      BubbleableMetadata $metadata = null
-    ) {
+  /**
+   * @param array $contexts
+   * @param $path
+   * @param array $options
+   * @param Request|null $request
+   * @param BubbleableMetadata|null $metadata
+   * @return mixed
+   */
+  public function processOutbound(array $contexts, $path, array &$options, Request $request = null, BubbleableMetadata $metadata = null)
+  {
 
-      $result = $path;
+    $result = $path;
 
-      /** @var Context $context */
-      foreach ($contexts as $context) {
+    /** @var Context $context */
+    foreach ($contexts as $context) {
 
-        if (!in_array(MethodInterface::STAGE_PROCESS_OUTBOUND, $context->getMethod()->getStages())) {
-          continue;
-        }
-
-        $contextResult = null;
-
-        if ($context->getAction() == Context::ENTER_CONTEXT) {
-          $contextResult = $context->getMethod()->enterContext($context->getModifier(), $result, $options);
-        } elseif ($context->getAction() == Context::EXIT_CONTEXT) {
-          $contextResult = $context->getMethod()->exitContext($context->getModifier(), $result, $options);
-        }
-
-        $result = $contextResult ?: $result;
+      if (!in_array(MethodInterface::STAGE_PROCESS_OUTBOUND, $context->getMethod()->getStages())) {
+        continue;
       }
 
-      return $result;
-    }
+      $contextResult = null;
 
-    public function preGenerate(
-      array $contexts,
-      $routeName,
-      array &$parameters,
-      array &$options,
-      $collect_bubblable_metadata
-    ) {
-      $this->ensureContexts($contexts);
-
-      /** @var Context $context */
-      foreach ($contexts as $context) {
-
-        if (!in_array(MethodInterface::STAGE_PRE_GENERATE, $context->getMethod()->getStages())) {
-          continue;
-        }
-
-        if ($context->getAction() == Context::ENTER_CONTEXT) {
-            $context->getMethod()->preGenerateEnter($context->getModifier(), $routeName, $parameters, $options, $collect_bubblable_metadata);
-        } elseif ($context->getAction() == Context::EXIT_CONTEXT) {
-            $context->getMethod()->preGenerateExit($context->getModifier(), $routeName, $parameters, $options, $collect_bubblable_metadata);
-        }
-
-      }
-    }
-
-    private function ensureContexts(array $contexts)
-    {
-      foreach($contexts as $index => $context) {
-        if (!$context instanceof Context) {
-          throw new \InvalidArgumentException(sprintf('#%d is not a context.', $index + 1));
-        }
+      if ($context->getAction() == Context::ENTER_CONTEXT) {
+        $contextResult = $context->getMethod()->enterContext($context->getModifier(), $result, $options);
+      } elseif ($context->getAction() == Context::EXIT_CONTEXT) {
+        $contextResult = $context->getMethod()->exitContext($context->getModifier(), $result, $options);
       }
 
-      return true;
+      $result = $contextResult ?: $result;
     }
 
-    public function createContextsFromMap(array $map)
-    {
-        if (count($map) === 0) {
-          return [];
-        }
+    return $result;
+  }
 
-        $providers = $this->storage->loadMultiple(array_keys($map));
+  /**
+   * @param array $contexts
+   * @param $routeName
+   * @param array $parameters
+   * @param array $options
+   * @param $collect_bubblable_metadata
+   */
+  public function preGenerate(array $contexts, $routeName, array &$parameters, array &$options, $collect_bubblable_metadata)
+  {
+    $this->ensureContexts($contexts);
 
-        return array_map(function (Provider $provider) use ($map) {
-            return new Context($map[$provider->id()], $provider->getMethodPlugin());
-        }, $providers);
+    /** @var Context $context */
+    foreach ($contexts as $context) {
+
+      if (!in_array(MethodInterface::STAGE_PRE_GENERATE, $context->getMethod()->getStages())) {
+        continue;
+      }
+
+      if ($context->getAction() == Context::ENTER_CONTEXT) {
+        $context->getMethod()->preGenerateEnter($context->getModifier(), $routeName, $parameters, $options, $collect_bubblable_metadata);
+      } elseif ($context->getAction() == Context::EXIT_CONTEXT) {
+        $context->getMethod()->preGenerateExit($context->getModifier(), $routeName, $parameters, $options, $collect_bubblable_metadata);
+      }
+
     }
+  }
+
+  /**
+   * @param array $contexts
+   * @return bool
+   */
+  private function ensureContexts(array $contexts)
+  {
+    foreach ($contexts as $index => $context) {
+      if (!$context instanceof Context) {
+        throw new \InvalidArgumentException(sprintf('#%d is not a context.', $index + 1));
+      }
+    }
+  }
+
+  /**
+   * @param array $map
+   * @return array
+   */
+  public function createContextsFromMap(array $map)
+  {
+    if (count($map) === 0) {
+      return [];
+    }
+
+    $providers = $this->storage->loadMultiple(array_keys($map));
+
+    return array_map(function (Provider $provider) use ($map) {
+      return new Context($map[$provider->id()], $provider->getMethodPlugin());
+    }, $providers);
+  }
 }

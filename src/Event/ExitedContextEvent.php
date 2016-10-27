@@ -51,7 +51,7 @@ class ExitedContextEvent extends Event
   }
 
   /**
-   * @return mixed
+   * @return
    */
   public function getMatches()
   {

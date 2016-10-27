@@ -7,28 +7,28 @@ use Drupal\purl\Plugin\Purl\Method\MethodInterface;
 
 interface ProviderConfigInterface
 {
-    /**
-     * @return string
-     */
-    public function getProviderKey();
+  /**
+   * @return string
+   */
+  public function getProviderKey();
 
-    /**
-     * @return string
-     */
-    public function getLabel();
+  /**
+   * @return string
+   */
+  public function getLabel();
 
-    /**
-     * @return string
-     */
-    public function getMethodKey();
+  /**
+   * @return string
+   */
+  public function getMethodKey();
 
-    /**
-     * @return MethodInterface
-     */
-    public function getMethodPlugin();
+  /**
+   * @return MethodInterface
+   */
+  public function getMethodPlugin();
 
-    /**
-     * @return ProviderInterface
-     */
-    public function getProviderPlugin();
+  /**
+   * @return ProviderInterface
+   */
+  public function getProviderPlugin();
 }
