@@ -76,7 +76,7 @@ class UrlGenerator implements UrlGeneratorInterface
       $collect_bubbleable_metadata
     );
 
-    if (isset($options['host']) && strlen((string)$options['host']) > 0) {
+    if (isset($options['host']) && strlen((string) $options['host']) > 0) {
       $hostOverride = $options['host'];
       $originalHost = $this->getContext()->getHost();
       $this->getContext()->setHost($hostOverride);
