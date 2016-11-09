@@ -64,7 +64,6 @@ class PurlNodeContextRoutes implements EventSubscriberInterface {
 
       if (!isset($purl_settings['keep_context']) || !$purl_settings['keep_context']) {
         $url = \Drupal\Core\Url::fromRoute($this->routeMatch->getRouteName(), $this->routeMatch->getRawParameters()->all(), [
-          'purl_context' => false,
           'host' => Settings::get('purl_base_domain'),
           'absolute' => TRUE
         ]);
