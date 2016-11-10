@@ -20,40 +20,40 @@ use Symfony\Component\Routing\Route;
 
 class PurlContextOutboundRouteProcessor implements OutboundRouteProcessorInterface, EventSubscriberInterface
 {
-    /**
-     * @var MethodPluginManager
-     */
-    private $manager;
+  /**
+   * @var MethodPluginManager
+   */
+  private $manager;
 
-    /**
-     * @var ModifierMatchedEvent[]
-     */
-    private $events = array();
+  /**
+   * @var ModifierMatchedEvent[]
+   */
+  private $events = array();
 
-    public function __construct(MethodPluginManager $manager)
-    {
-        $this->manager = $manager;
+  public function __construct(MethodPluginManager $manager)
+  {
+    $this->manager = $manager;
+  }
+
+  public function processOutbound($route_name, Route $route, array &$parameters, BubbleableMetadata $bubbleable_metadata = NULL)
+  {
+    foreach ($this->events as $event) {
+      $method = $event->getMethod();
+      if ($method instanceof OutboundRouteAlteringInterface) {
+        $path = $method->alterOutboundRoute($route_name, $event->getModifier(), $route, $parameters, $bubbleable_metadata);
+      }
     }
+  }
 
-    public function processOutbound($route_name, Route $route, array &$parameters, BubbleableMetadata $bubbleable_metadata = NULL)
-    {
-        foreach ($this->events as $event) {
-            $method = $event->getMethod();
-            if ($method instanceof OutboundRouteAlteringInterface) {
-                $path = $method->alterOutboundRoute($route_name, $event->getModifier(), $route, $parameters, $bubbleable_metadata);
-            }
-        }
-    }
+  public function onModifierMatched(ModifierMatchedEvent $event)
+  {
+    $this->events[] = $event;
+  }
 
-    public function onModifierMatched(ModifierMatchedEvent $event)
-    {
-        $this->events[] = $event;
-    }
-
-    public static function getSubscribedEvents()
-    {
-        return [
-            PurlEvents::MODIFIER_MATCHED => array('onModifierMatched', 300),
-        ];
-    }
+  public static function getSubscribedEvents()
+  {
+    return [
+      PurlEvents::MODIFIER_MATCHED => array('onModifierMatched', 300),
+    ];
+  }
 }

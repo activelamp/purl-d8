@@ -14,28 +14,31 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class RebuildIndex implements EventSubscriberInterface
 {
-    /**
-     * @var ModifierIndex
-     */
-    protected $modifierIndex;
+  /**
+   * @var ModifierIndex
+   */
+  protected $modifierIndex;
 
+  /**
+   * RebuildIndex constructor.
+   * @param ModifierIndex $modifierIndex
+   */
+  public function __construct(ModifierIndex $modifierIndex)
+  {
+    $this->modifierIndex = $modifierIndex;
+  }
 
-    public function __construct(ModifierIndex $modifierIndex)
-    {
-        $this->modifierIndex = $modifierIndex;
-    }
+  public static function getSubscribedEvents()
+  {
+    return array(
+      // RequestSubscriber comes in at 50. We need to go before it.
+      KernelEvents::REQUEST => array('onRequest', 51),
+    );
+  }
 
-    public static function getSubscribedEvents()
-    {
-        return array(
-            // RequestSubscriber comes in at 50. We need to go before it.
-            KernelEvents::REQUEST => array('onRequest', 51),
-        );
-    }
-
-    public function onRequest(GetResponseEvent $event, $eventName, EventDispatcherInterface $dispatcher)
-    {
-        return;
-        $this->modifierIndex->performDueRebuilds();
-    }
+  public function onRequest(GetResponseEvent $event, $eventName, EventDispatcherInterface $dispatcher)
+  {
+    return;
+    $this->modifierIndex->performDueRebuilds();
+  }
 }

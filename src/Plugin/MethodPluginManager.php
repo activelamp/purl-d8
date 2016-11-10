@@ -13,53 +13,55 @@ use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 class MethodPluginManager extends DefaultPluginManager implements MethodPluginManagerInterface, ContainerAwareInterface
 {
 
-    use ContainerAwareTrait;
+  use ContainerAwareTrait;
 
-    /**
-     * @var MethodInterface[]
-     *
-     * We store created instances here and return the right one when queried
-     * for again. We only one one instance for each method plugin.
-     */
-    protected $methodPlugins = array();
+  /**
+   * @var MethodInterface[]
+   *
+   * We store created instances here and return the right one when queried
+   * for again. We only one one instance for each method plugin.
+   */
+  protected $methodPlugins = array();
 
-    public function __construct(
-        \Traversable $namespaces,
-        CacheBackendInterface $cacheBackend,
-        ModuleHandlerInterface $moduleHandler
-    ) {
-        parent::__construct(
-            'Plugin/Purl/Method',
-            $namespaces,
-            $moduleHandler,
-            'Drupal\purl\Plugin\Purl\Method\MethodInterface',
-            'Drupal\purl\Annotation\PurlMethod'
-        );
+  public function __construct(
+    \Traversable $namespaces,
+    CacheBackendInterface $cacheBackend,
+    ModuleHandlerInterface $moduleHandler
+  )
+  {
+    parent::__construct(
+      'Plugin/Purl/Method',
+      $namespaces,
+      $moduleHandler,
+      'Drupal\purl\Plugin\Purl\Method\MethodInterface',
+      'Drupal\purl\Annotation\PurlMethod'
+    );
 
-        $this->setCacheBackend($cacheBackend, 'purl_method_plugins');
+    $this->setCacheBackend($cacheBackend, 'purl_method_plugins');
+  }
+
+  /**
+   * @param string $id
+   * @return MethodInterface
+   */
+  public function getMethodPlugin($id)
+  {
+    if (!isset($this->methodPlugins[$id])) {
+      $plugin = $this->createInstance($id);
+
+      if ($plugin instanceof ContainerAwareInterface) {
+        $plugin->setContainer($this->container);
+      }
+
+      $this->methodPlugins[$id] = $plugin;
     }
 
-    /**
-     * @param string $id
-     * @return MethodInterface
-     */
-    public function getMethodPlugin($id)
-    {
-        if (!isset($this->methodPlugins[$id])) {
-            $plugin = $this->createInstance($id);
+    return $this->methodPlugins[$id];
+  }
 
-            if ($plugin instanceof ContainerAwareInterface) {
-                $plugin->setContainer($this->container);
-            }
+  public function hasMethodPlugin($id)
+  {
+    return $this->hasDefinition($id);
+  }
 
-            $this->methodPlugins[$id] = $plugin;
-        }
-
-        return $this->methodPlugins[$id];
-    }
-
-    public function hasMethodPlugin($id)
-    {
-        return $this->hasDefinition($id);
-    }
 }

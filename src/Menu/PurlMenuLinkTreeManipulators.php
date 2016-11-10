@@ -5,7 +5,10 @@ namespace Drupal\purl\Menu;
 use Drupal\Core\Access\AccessManagerInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\Query\QueryFactory;
+use Drupal\Core\Menu\MenuLinkTreeElement;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
+use Drupal\purl\MatchedModifiers;
 
 
 /**
@@ -20,43 +23,25 @@ use Drupal\Core\Session\AccountInterface;
 class PurlMenuLinkTreeManipulators {
 
   /**
-   * The access manager.
-   *
-   * @var \Drupal\Core\Access\AccessManagerInterface
+   * @var MatchedModifiers
    */
-  protected $accessManager;
+  private $matchedModifiers;
 
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $account;
-
-  /**
-   * The entity query factory.
-   *
-   * @var \Drupal\Core\Entity\Query\QueryFactory
-   */
-  protected $queryFactory;
-
-  /**
-   * Constructs a \Drupal\Core\Menu\DefaultMenuLinkTreeManipulators object.
-   *
-   * @param \Drupal\Core\Access\AccessManagerInterface $access_manager
-   *   The access manager.
-   * @param \Drupal\Core\Session\AccountInterface $account
-   *   The current user.
-   * @param \Drupal\Core\Entity\Query\QueryFactory $query_factory
-   *   The entity query factory.
-   */
-  public function __construct(AccessManagerInterface $access_manager, AccountInterface $account, QueryFactory $query_factory) {
-    $this->accessManager = $access_manager;
-    $this->account = $account;
-    $this->queryFactory = $query_factory;
+  public function __construct(MatchedModifiers $matchedModifiers) {
+    $this->matchedModifiers = $matchedModifiers;
   }
 
-  public function removeContext(array $tree) {
+  public function contexts(array $tree) {
+    /* @var $data MenuLinkTreeElement */
+
+    foreach ($tree as $data) {
+      $link = $data->link;
+      var_dump($link->getUrlObject());
+      var_dump($link->getUrlObject()->toString());
+      var_dump("-------------------------------");
+      $this->contexts($data->subtree);
+    }
+
     return $tree;
   }
 
