@@ -102,7 +102,7 @@ function purl_form_menu_link_content_menu_link_content_form_alter(&$form, FormSt
 
   foreach ($providers as $provider) {
     $modifiers= [];
-    foreach ($provider->getProviderPlugin()->getModifiers() as $modifier => $value) {
+    foreach ($provider->getProviderPlugin()->getModifierData() as $modifier => $value) {
       $modifiers[$provider->id() . ':' . $modifier] = $modifier;
     }
     $options[$provider->getLabel()] = $modifiers;
