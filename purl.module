@@ -58,7 +58,7 @@ function purl_form_menu_edit_form_alter(&$form, $form_state) {
 
   foreach ($providers as $provider) {
     $modifiers= [];
-    foreach ($provider->getProviderPlugin()->getModifiers() as $modifier => $value) {
+    foreach ($provider->getProviderPlugin()->getModifierData() as $modifier => $value) {
       $modifiers[$provider->id() . ':' . $modifier] = $modifier;
     }
     $options[$provider->getLabel()] = $modifiers;
