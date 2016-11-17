@@ -86,9 +86,15 @@ class SubdomainMethod extends MethodAbstract implements MethodInterface, Contain
         }
 
         $subdomains[] = $modifier;
+        $subdomains = array_values(array_filter($subdomains));
 
         $options['absolute'] = true;
-        $options['host'] = sprintf('%s.%s', implode('.', $subdomains), $baseHost);
+
+        if (count($subdomains)) {
+          $options['host'] = sprintf('%s.%s', implode('.', $subdomains), $baseHost);
+        } else {
+          $options['host']  = $baseHost;
+        }
 
         return $path;
     }
@@ -119,7 +125,12 @@ class SubdomainMethod extends MethodAbstract implements MethodInterface, Contain
         }));
 
         $options['absolute'] = true;
-        $options['host'] = sprintf('%s.%s', $subdomain, $baseHost);
+
+        if ($subdomain) {
+          $options['host'] = sprintf('%s.%s', $subdomain, $baseHost);
+        } else {
+          $options['host'] = $baseHost;
+        }
 
         return $path;
     }
