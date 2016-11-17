@@ -33,14 +33,17 @@ class PurlMenuLinkTreeManipulators {
 
   public function contexts(array $tree) {
     /* @var $data MenuLinkTreeElement */
+    return $tree;
 
     foreach ($tree as $data) {
+      var_dump(get_class($data->link));
       $link = $data->link;
       var_dump($link->getUrlObject());
       var_dump($link->getUrlObject()->toString());
       var_dump("-------------------------------");
       $this->contexts($data->subtree);
     }
+    exit;
 
     return $tree;
   }
