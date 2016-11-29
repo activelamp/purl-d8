@@ -58,7 +58,11 @@ class PurlNodeContextRoutes implements EventSubscriberInterface {
     $route_options = $this->routeMatch->getRouteObject()->getOptions();
     $isAdminRoute = array_key_exists('_admin_route', $route_options) && $route_options['_admin_route'];
 
-    if (!$isAdminRoute && $matched = $this->matchedModifiers->getMatched() && $entity = $this->routeMatch->getParameter('node')) {
+    if (!$isAdminRoute
+      && $matched = $this->matchedModifiers->getMatched()
+      && $entity = $this->routeMatch->getParameter('node')
+      && \Drupal::currentUser()->isAnonymous()
+    ) {
       $node_type = $this->entityStorage->load($entity->bundle());
       $purl_settings = $node_type->getThirdPartySettings('purl');
 
