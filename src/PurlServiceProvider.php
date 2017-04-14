@@ -11,6 +11,7 @@ namespace Drupal\purl;
 
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\DependencyInjection\ServiceProviderBase;
+use Drupal\purl\Routing\PurlRouteProvider;
 use Drupal\purl\Utility\PurlAwareUnroutedUrlAssembler;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -25,6 +26,11 @@ class PurlServiceProvider extends ServiceProviderBase
     $assemblerDefinition->setClass(PurlAwareUnroutedUrlAssembler::class);
     $assemblerDefinition->addArgument(new Reference('purl.context_helper'));
     $assemblerDefinition->addArgument(new Reference('purl.matched_modifiers'));
+
+    $routerDefinition = $container->getDefinition('router.route_provider');
+    $routerDefinition->setClass(PurlRouteProvider::class);
+    $routerDefinition->addArgument(new Reference('purl.context_helper'));
+    $routerDefinition->addArgument(new Reference('purl.matched_modifiers'));
 
   }
 }
