@@ -31,6 +31,5 @@ class PurlServiceProvider extends ServiceProviderBase
     $routerDefinition->setClass(PurlRouteProvider::class);
     $routerDefinition->addArgument(new Reference('purl.context_helper'));
     $routerDefinition->addArgument(new Reference('purl.matched_modifiers'));
-
   }
 }

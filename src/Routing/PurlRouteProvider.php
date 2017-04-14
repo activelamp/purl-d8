@@ -6,17 +6,13 @@ use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Path\CurrentPathStack;
+use Drupal\Core\Path\PathValidator;
 use Drupal\Core\PathProcessor\InboundPathProcessorInterface;
 use Drupal\Core\Routing\RouteProvider;
 use Drupal\Core\State\StateInterface;
 use Drupal\purl\ContextHelper;
 use Drupal\purl\MatchedModifiers;
-use Symfony\Cmf\Component\Routing\PagedRouteCollection;
-use Symfony\Cmf\Component\Routing\PagedRouteProviderInterface;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Exception\RouteNotFoundException;
-use Symfony\Component\Routing\RouteCollection;
 use \Drupal\Core\Database\Connection;
 
 /**
@@ -90,6 +86,7 @@ class PurlRouteProvider extends RouteProvider {
   protected $contextHelper;
 
   protected $matchedModifiers;
+
   /**
    * Cache ID prefix used to load routes.
    */
@@ -120,11 +117,10 @@ class PurlRouteProvider extends RouteProvider {
     CacheBackendInterface $cache_backend,
     InboundPathProcessorInterface $path_processor,
     CacheTagsInvalidatorInterface $cache_tag_invalidator,
-    $table = 'router',
     ContextHelper $contextHelper,
     MatchedModifiers $matchedModifiers
   ) {
-    parent::__construct($connection, $state, $current_path, $cache_backend, $path_processor, $cache_tag_invalidator, $table);
+    parent::__construct($connection, $state, $current_path, $cache_backend, $path_processor, $cache_tag_invalidator);
     $this->contextHelper = $contextHelper;
     $this->matchedModifiers = $matchedModifiers;
   }
@@ -135,8 +131,16 @@ class PurlRouteProvider extends RouteProvider {
   public function getRouteCollectionForRequest(Request $request) {
     // Cache both the system path as well as route parameters and matching
     // routes.
-    $cid = 'route:' . $request->getPathInfo() . ':' . $request->getQueryString();
-    if ($cached = $this->cache->get($cid)) {
+    $matches = reset($this->matchedModifiers->getMatched());
+    if ($matches) {
+      $modifier = $matches->getModifier();
+      $cid = 'route:' . '/' . $modifier . $request->getPathInfo() . ':' . $request->getQueryString();
+    }
+    else {
+      $cid = 'route:' . $request->getPathInfo() . ':' . $request->getQueryString();
+    }
+
+    if (false && $cached = $this->cache->get($cid)) {
       $this->currentPath->setPath($cached->data['path'], $request);
       $request->query->replace($cached->data['query']);
       return $cached->data['routes'];
