@@ -131,7 +131,8 @@ class PurlRouteProvider extends RouteProvider {
   public function getRouteCollectionForRequest(Request $request) {
     // Cache both the system path as well as route parameters and matching
     // routes.
-    $matches = reset($this->matchedModifiers->getMatched());
+    $matches = $this->matchedModifiers->getMatched();
+    $matches = reset($matches);
     if ($matches) {
       $modifier = $matches->getModifier();
       $cid = 'route:' . '/' . $modifier . $request->getPathInfo() . ':' . $request->getQueryString();
